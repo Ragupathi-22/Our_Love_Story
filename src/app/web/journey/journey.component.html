@@ -1,0 +1,121 @@
+  <div class="min-h-screen bg-gray-50 py-24 overflow-hidden">
+
+  <div class="container mx-auto px-4">
+
+    <!-- Monthly Memories Section -->
+    <div class="mb-10">
+      <h2 class="text-2xl font-bold text-center text-pink-600 mb-6">
+       Timeline Memories ❤️ {{ now | date: 'MMMM' }} 
+      </h2>
+
+      <!-- Mobile View: Circle Layout -->
+      <div class="flex overflow-x-auto space-x-6 px-2 py-4 md:hidden mt-5"
+        style="scrollbar-color: #f472b6 transparent; scrollbar-width: thin;">
+        <ng-container *ngIf="currentMonthItems$ | async as currentMonthItems">
+
+          <!-- Show if list has memory -->
+          <ng-container *ngIf="currentMonthItems.length > 0; else noMemoriesFound">
+
+            <div *ngFor="let item of currentMonthItems" class="flex-shrink-0 w-40 text-center">
+              <div class="relative w-40 h-40 rounded-full overflow-hidden border-4 border-pink-300 shadow-lg">
+                <img [src]="item.photoUrl" [alt]="item.title" class="w-full h-full object-cover" loading="lazy" />
+              </div>
+              <p class="mt-3 text-sm font-semibold text-gray-800 truncate">
+                {{ item.title }}
+              </p>
+              <p class="text-xs text-gray-500">
+                {{ item.date | date: 'MMM d, y' }}
+              </p>
+            </div>
+          </ng-container>
+        </ng-container>
+
+        <!-- Fallback Template -->
+        <ng-template #noMemoriesFound>
+          <p class="text-center text-gray-400 italic">No memories found for this month.</p>
+        </ng-template>
+
+      </div>
+
+      <!-- Desktop View: Card Layout -->
+      <div class="hidden md:block overflow-x-auto pb-4">
+        <ng-container *ngIf="currentMonthItems$ | async as currentMonthItems">
+
+          <!-- Show if list has memory -->
+          <ng-container *ngIf="currentMonthItems.length > 0; else noMemoriesFound">
+            <div class="flex gap-4 min-w-max px-2">
+
+              <div *ngFor="let item of currentMonthItems" class="w-72 flex-shrink-0">
+                <div class="bg-white rounded-lg overflow-hidden shadow-md hover:shadow-lg transition-all h-full">
+                  <div class="h-40 overflow-hidden">
+                    <img [src]="item.photoUrl" [alt]="item.title"
+                      class="w-full h-full object-contain transition-transform hover:scale-105" />
+                  </div>
+                  <div class="p-4">
+                    <div class="flex justify-between items-start">
+                      <h3 class="font-medium text-gray-800">
+                        {{ item.title }}
+                      </h3>
+                      <span class="h-4 w-4 text-pink-500 mt-1">💖</span>
+                    </div>
+                    <p class="text-sm text-gray-500 mb-2">
+                      {{ item.date | date: 'MMM d, y' }}
+                    </p>
+                    <!-- <p class="text-sm text-gray-600 line-clamp-2">
+                    {{ item.description }}
+                  </p> -->
+                  </div>
+                </div>
+              </div>
+            </div>
+          </ng-container>
+        </ng-container>
+
+        <!-- Fallback Template -->
+        <ng-template #noMemoriesFound>
+          <p class="text-center text-gray-400 italic">No memories found for this month.</p>
+        </ng-template>
+      </div>
+    </div>
+
+    <!-- Rest of your Timeline section below remains unchanged -->
+    <app-animated-section class="text-center mb-16">
+      <h1 class="text-4xl md:text-5xl font-bold mb-4">Our Timeline</h1>
+      <p class="text-gray-600 max-w-2xl mx-auto">
+        Every moment with you is a treasure. Here's a look back at some of
+        our most special memories together.
+      </p>
+    </app-animated-section>
+
+    <div class="relative mt-5">
+      <!-- Timeline vertical line -->
+      <div class="hidden md:block absolute left-1/2 transform -translate-x-1/2 h-full w-0.5 bg-gray-300"></div>
+
+      <div class="space-y-12">
+        <ng-container *ngIf="timeline$ | async as timeline">
+          <ng-container *ngIf="timeline.length > 0; else noTimelineFound">
+            <ng-container *ngFor="let item of timeline; let i = index">
+              <app-timeline-card [date]="item.date" [title]="item.title" [description]="item.description"
+                [image]="item.photoUrl" [isLeft]="i % 2 === 0">
+              </app-timeline-card>
+            </ng-container>
+          </ng-container>
+
+          <!-- Fallback Template -->
+          <ng-template #noTimelineFound>
+            <p class="text-center text-gray-400 italic">No timeline available 
+          </ng-template>
+        </ng-container>
+      </div>
+    </div>
+
+    <!-- Celebrate Button -->
+    <app-animated-section class="mt-24 text-center">
+      <button (click)="showCelebrate()"
+        class="fixed bottom-5 md:bottom-24 right-6 z-50 bg-gray-400 hover:bg-gray-700 text-white font-semibold px-5 py-3 rounded-full shadow-lg transition-all duration-300">
+        💖 Celebrate
+      </button>
+    </app-animated-section>
+
+  </div>
+</div>

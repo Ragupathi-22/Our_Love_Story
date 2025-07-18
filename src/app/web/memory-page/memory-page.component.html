@@ -1,0 +1,180 @@
+<div class="min-h-screen bg-gradient-to-b from-pink-50 to-white py-24">
+  <div class="container mx-auto px-4">
+    <div class="text-center mb-8">
+      <h1 class="text-4xl md:text-5xl font-bold mb-4">Memory Keeper</h1>
+      <p class="text-gray-600 max-w-2xl mx-auto">
+        Keep track of important dates, tasks, and reminders for your relationship.
+      </p>
+    </div>
+
+    <!-- Tabs -->
+    <div class="flex flex-wrap justify-center gap-2 mb-8">
+      <button
+        (click)="activeTab.set('reminders')"
+        [ngClass]="activeTab() === 'reminders' ? 'bg-pink-500 text-white shadow-md' : 'bg-white text-gray-700 hover:bg-pink-100 border border-pink-200'"
+        class="px-4 py-2 rounded-full transition-all"
+      >
+        Reminders
+      </button>
+      <button
+        (click)="activeTab.set('period')"
+        [ngClass]="activeTab() === 'period' ? 'bg-pink-500 text-white shadow-md' : 'bg-white text-gray-700 hover:bg-pink-100 border border-pink-200'"
+        class="px-4 py-2 rounded-full transition-all"
+      >
+        Period Tracker
+      </button>
+    </div>
+
+    <!-- Reminders Tab -->
+    <div *ngIf="activeTab() === 'reminders'" class="bg-white rounded-xl shadow-lg p-6 mb-8">
+      <h2 class="text-2xl font-medium mb-4 text-gray-800">Reminders</h2>
+
+      <div class="flex flex-col sm:flex-row gap-2 mb-6">
+        <input
+          type="text"
+          [ngModel]="newReminder().text"
+          (ngModelChange)="updateReminderText($event)"
+          placeholder="Add a reminder..."
+          class="flex-grow px-4 py-2 rounded-lg sm:rounded-l-lg sm:rounded-r-none border border-gray-300 focus:outline-none focus:ring-2 focus:ring-pink-300"
+        />
+        <input
+          type="date"
+          [ngModel]="newReminder().date"
+          (ngModelChange)="updateReminderDate($event)"
+          class="px-4 py-2 border border-gray-300 focus:outline-none focus:ring-2 focus:ring-pink-300 sm:rounded-none"
+        />
+<button
+  (click)="addReminder()"
+  [disabled]="isLoading()"
+  class="relative bg-pink-500 text-white px-4 py-2 rounded-lg sm:rounded-l-none sm:rounded-r-lg hover:bg-pink-600 transition-colors flex items-center justify-center"
+>
+  <ng-container *ngIf="isLoading(); else btnText">
+    <span class="animate-spin border-2 border-white border-t-transparent rounded-full w-4 h-4"></span>
+  </ng-container>
+  <ng-template #btnText> Add </ng-template>
+</button>
+
+      </div>
+
+      <!-- Scrollable Reminders List -->
+      <div *ngIf="reminders().length > 0; else noReminders" class="space-y-3 max-h-[360px] overflow-y-auto pr-2">
+        <div
+          *ngFor="let r of reminders()"
+          class="flex items-center justify-between bg-gray-50 p-3 rounded-lg hover:bg-gray-100 transition-colors"
+        >
+          <div class="flex items-center">
+            <lucide-icon [name]="bell" class="h-5 w-5 text-pink-500 mr-3" />
+            <div>
+              <p>{{ r.title }}</p>
+              <p class="text-sm text-gray-500">{{ formatDate(r.date) }}</p>
+            </div>
+          </div>
+          <button (click)="deleteReminder(r.id)" class="text-gray-400 hover:text-red-500">
+            <lucide-icon [name]="x" class="h-4 w-4" />
+          </button>
+        </div>
+      </div>
+      <ng-template #noReminders>
+        <p class="text-gray-500 text-center py-4">No reminders yet. Add some!</p>
+      </ng-template>
+    </div>
+
+    <!-- Period Tracker Tab -->
+    <div *ngIf="activeTab() === 'period'" class="bg-white rounded-xl shadow-lg p-6 mb-8">
+      <h2 class="text-2xl font-medium mb-4 text-gray-800">Period Tracker</h2>
+
+      <div class="flex flex-col sm:flex-row gap-2 mb-6">
+        <div class="flex flex-col sm:flex-row gap-2 flex-grow">
+          <div class="flex-1">
+            <label class="block text-sm text-gray-600 mb-1">Start Date</label>
+            <input
+              type="date"
+              [ngModel]="newPeriod().startDate"
+             (ngModelChange)="updatePeriodStart($event)"
+              class="w-full px-4 py-2 rounded-lg border border-gray-300 focus:outline-none focus:ring-2 focus:ring-pink-300"
+            />
+          </div>
+          <div class="flex-1">
+            <label class="block text-sm text-gray-600 mb-1">End Date</label>
+            <input
+              type="date"
+              [ngModel]="newPeriod().endDate"
+              (ngModelChange)="updatePeriodEnd($event)"
+              class="w-full px-4 py-2 rounded-lg border border-gray-300 focus:outline-none focus:ring-2 focus:ring-pink-300"
+            />
+          </div>
+        </div>
+<button
+  (click)="addPeriod()"
+  [disabled]="isLoading()"
+  class="relative bg-pink-500 text-white px-4 py-2 rounded-lg sm:rounded-l-none sm:rounded-r-lg hover:bg-pink-600 transition-colors flex items-center justify-center"
+>
+  <ng-container *ngIf="isLoading(); else btnText">
+    <span class="animate-spin border-2 border-white border-t-transparent rounded-full w-4 h-4"></span>
+  </ng-container>
+  <ng-template #btnText> Add </ng-template>
+</button>
+
+      </div>
+
+      <div *ngIf="nextPeriod" class="mb-6 p-4 bg-pink-50 rounded-lg border border-pink-100">
+        <h3 class="font-medium text-pink-700 flex items-center">
+          <lucide-icon [name]="calendar" class="h-5 w-5 mr-2" />
+          Next Period Prediction
+        </h3>
+        <p class="mt-2 text-gray-700">Estimated start date: <span class="font-medium">{{ nextPeriod()?.startDate }}</span></p>
+        <p class="text-gray-700">Estimated end date: <span class="font-medium">{{ nextPeriod()?.endDate }}</span></p>
+        <p class="text-xs text-gray-500 mt-2">Based on a simple 28-day cycle estimation.</p>
+      </div>
+
+  <div class="mb-6">
+  <h3 class="font-medium text-gray-700 mb-3">Period History</h3>
+  
+  <!-- Make this scrollable -->
+  <div class="h-20 bg-gray-100 rounded-lg relative overflow-hidden overflow-x-auto scrollbar-thin scrollbar-thumb-pink-300">
+    <div
+      *ngIf="periods().length > 0; else noPeriodsBar"
+      class="flex h-full items-center min-w-max"
+    >
+      <div
+        *ngFor="let p of periods()"
+        class="h-8 bg-pink-400 mx-1 rounded relative"
+        [style.width.px]="getPeriodWidth(p.startDate, p.endDate)"
+      >
+        <div class="absolute -bottom-5 left-0 text-xs text-gray-500 whitespace-nowrap">
+          {{ formatDate(p.startDate).split(' ')[0] }}
+        </div>
+      </div>
+    </div>
+
+    <ng-template #noPeriodsBar>
+      <div class="flex items-center justify-center h-full text-gray-500">No period data yet</div>
+    </ng-template>
+  </div>
+</div>
+
+
+      <!-- Scrollable Period List -->
+      <div *ngIf="periods().length > 0; else noPeriodsList" class="space-y-3 max-h-[360px] overflow-y-auto pr-2">
+        <div
+          *ngFor="let p of periods()"
+          class="flex items-center justify-between bg-gray-50 p-3 rounded-lg hover:bg-gray-100 transition-colors"
+        >
+          <div class="flex items-center">
+            <lucide-icon [name]="heart" class="h-5 w-5 text-pink-500 mr-3" />
+            <div>
+              <p>Period</p>
+              <p class="text-sm text-gray-500">{{ formatDate(p.startDate) }} - {{ formatDate(p.endDate) }}</p>
+            </div>
+          </div>
+          <button (click)="deletePeriod(p.id)" class="text-gray-400 hover:text-red-500">
+            <lucide-icon [name]="x" class="h-4 w-4" />
+          </button>
+        </div>
+      </div>
+      <ng-template #noPeriodsList>
+        <p class="text-gray-500 text-center py-4">No period dates yet. Add some!</p>
+      </ng-template>
+    </div>
+  </div>
+</div>

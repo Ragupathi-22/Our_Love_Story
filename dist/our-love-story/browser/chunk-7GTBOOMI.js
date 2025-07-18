@@ -1,0 +1,1 @@
+import{Jb as s,db as n,ub as o,vb as i}from"./chunk-5KRWD2P7.js";import"./chunk-KT3CPUTC.js";var p=class t{static \u0275fac=function(e){return new(e||t)};static \u0275cmp=n({type:t,selectors:[["app-vibes"]],decls:2,vars:0,template:function(e,m){e&1&&(o(0,"p"),s(1,"vibes works!"),i())},encapsulation:2})};export{p as VibesComponent};

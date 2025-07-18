@@ -1,0 +1,76 @@
+<nav class="fixed w-full z-50 transition-all duration-300"
+  [ngClass]="scrolled ? 'bg-white/90 backdrop-blur-sm shadow-md py-2' : 'bg-transparent py-4'">
+  <div class="container mx-auto px-4 flex justify-between items-center">
+
+    <a routerLink="/" class="flex items-center space-x-2">
+      <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none"
+        stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"
+        class="lucide lucide-heart h-6 w-6 text-pink-500" data-id="element-31">
+        <path
+          d="M19 14c1.49-1.46 3-3.21 3-5.5A5.5 5.5 0 0 0 16.5 3c-1.76 0-3 .5-4.5 2-1.5-1.5-2.74-2-4.5-2A5.5 5.5 0 0 0 2 8.5c0 2.3 1.5 4.05 3 5.5l7 7Z">
+        </path>
+      </svg>
+      <!-- <span style="font-family: 'Dancing', cursive;" class="text-2xl font-bold text-pink-600">Story of RG</span> -->
+      <span style="font-family: 'Dancing', cursive;" class="text-2xl font-bold text-pink-600">
+        Story of <span [class.fadeOut]="isFading">{{ swappedText }}</span>
+      </span>
+
+    </a>
+    
+
+    <!-- Desktop Nav -->
+    <div class="hidden md:flex space-x-6">
+      <a *ngFor="let item of navItems" routerLink="{{ item.path }}"
+        class="transition-all duration-300 hover:text-pink-500"
+        [ngClass]="{ 'text-pink-600 font-medium': router.url === item.path, 'text-gray-700': router.url !== item.path }">
+        {{ item.name }}
+      </a>
+    </div>
+
+ <div class="flex">
+    <!-- Mobile Toggle Button -->
+    <div class="md:hidden mobile-toggle-btn">
+      <button class="text-pink-600" (click)="toggleMenu()">
+        <span *ngIf="!isOpen">&#9776;</span> <!-- MenuIcon -->
+        <span *ngIf="isOpen">&times;</span> <!-- XIcon -->
+      </button>
+    </div>
+  </div>
+
+       <!-- Settings Button & Popup -->
+    <div class="relative settings-dropdown">
+      <button (click)="toggleSettings()" class="transition hover:scale-105">
+        <lucide-icon [name]="settings"></lucide-icon>
+      </button>
+
+      <!-- setting Styled Popup -->
+      <div *ngIf="showSettings"
+        class="absolute right-0 mt-2 w-44 bg-white border rounded-xl shadow-2xl z-50 overflow-hidden animate-fade-in transition-all duration-300">
+        <button (click)="goToAdmin()"
+          class="w-full text-left px-4 py-3 text-sm text-gray-700 hover:bg-pink-100 hover:text-pink-600 transition">
+          💼 Go to Admin
+        </button>
+        <button (click)="logout()"
+          class="w-full text-left px-4 py-3 text-sm text-gray-700 hover:bg-pink-100 hover:text-pink-600 transition">
+          🚪 Logout
+        </button>
+      </div>
+    </div>
+</div>
+  <!-- Mobile Menu -->
+  <!-- Mobile Menu -->
+  <div *ngIf="isOpen" class="md:hidden bg-white/95 backdrop-blur-sm shadow-lg mobile-menu">
+    <div class="flex flex-col py-4 px-4 space-y-3">
+      <a *ngFor="let item of navItems" routerLink="{{ item.path }}"
+        class="py-2 px-4 rounded-md transition-all duration-300" [ngClass]="{
+        'bg-pink-50 text-pink-600 font-medium': router.url === item.path,
+        'text-gray-700 hover:bg-pink-50 hover:text-pink-500': router.url !== item.path
+      }" (click)="closeMenu()">
+        {{ item.name }}
+      </a>
+    </div>
+  </div>
+
+
+
+</nav>

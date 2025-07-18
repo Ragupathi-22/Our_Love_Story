@@ -1,0 +1,30 @@
+<div class="min-h-screen bg-gray-900 text-white py-24">
+  <div class="container mx-auto px-4">
+    <app-animated-section class="text-center mb-16">
+      <h1 class="text-4xl md:text-5xl font-bold mb-4 text-pink-400">Our Vibes</h1>
+      <p class="text-gray-300 max-w-2xl mx-auto">
+        The soundtrack to our love story. Every song reminds me of a special moment with you.
+      </p>
+    </app-animated-section>
+
+    <div class="grid grid-cols-1 md:grid-cols-2 gap-8 mt-4">
+      <ng-container *ngFor="let entry of safePlaylistUrls">
+        <div class="bg-gray-800 rounded-lg shadow-lg overflow-hidden">
+          <div class="p-4 border-b border-gray-700">
+            <h2 class="text-xl font-semibold text-pink-300 text-center">
+              {{ entry.item.playlistName }}
+            </h2>
+          </div>
+          <iframe
+            class="w-full"
+            height="450"
+            [src]="entry.safeUrl"
+            frameborder="0"
+            allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
+            allowfullscreen
+          ></iframe>
+        </div>
+      </ng-container>
+    </div>
+  </div>
+</div>

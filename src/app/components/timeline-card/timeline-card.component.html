@@ -1,0 +1,29 @@
+<div class="mb-16">
+  <div class="flex flex-col md:flex-row items-center" [ngClass]="{ 'md:flex-row-reverse': !isLeft }">
+    <!-- Image Section -->
+    <div class="w-full md:w-1/2 px-4">
+      <div class="relative overflow-hidden rounded-lg shadow-lg transform transition-all duration-700 hover:scale-105"
+        [ngClass]="{
+          'translate-x-0 opacity-100': isVisible,
+          '-translate-x-10 opacity-0': !isVisible && isLeft,
+          'translate-x-10 opacity-0': !isVisible && !isLeft
+        }" (mouseenter)="isHovered = true" (mouseleave)="isHovered = false">
+        
+        <img [src]="image" [alt]="title" class="w-full max-h-96 object-contain transition-all duration-700" [ngClass]="{
+    'scale-110 md:filter-none': isHovered,
+    'md:filter md:grayscale': !isHovered
+  }" />
+
+        <div class="absolute bottom-0 left-0 right-0 bg-gradient-to-t from-black/70 to-transparent p-4">
+          <p class="text-white text-sm">{{ date }}</p>
+        </div>
+      </div>
+    </div>
+
+    <!-- Text Section -->
+    <div class="w-full md:w-1/2 px-4 mt-4 md:mt-0" [ngClass]="{ 'md:text-right': !isLeft, 'md:text-left': isLeft }">
+      <h3 class="text-2xl font-semibold mb-2">{{ title }}</h3>
+      <p class="text-gray-600">{{ description }}</p>
+    </div>
+  </div>
+</div>

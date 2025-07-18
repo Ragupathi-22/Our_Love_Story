@@ -1,0 +1,1 @@
+import{Jb as l,db as n,ub as o,vb as a}from"./chunk-5KRWD2P7.js";import"./chunk-KT3CPUTC.js";var r=class t{static \u0275fac=function(e){return new(e||t)};static \u0275cmp=n({type:t,selectors:[["app-gallery"]],decls:2,vars:0,template:function(e,i){e&1&&(o(0,"p"),l(1,"gallery works!"),a())},encapsulation:2})};export{r as GalleryComponent};

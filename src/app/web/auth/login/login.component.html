@@ -1,0 +1,116 @@
+<div class="min-h-screen relative overflow-hidden bg-gradient-to-br from-pink-100 via-rose-50 to-pink-200">
+
+<!-- Floating hearts -->
+<div class="absolute inset-0 overflow-hidden pointer-events-none">
+  <div *ngFor="let heart of hearts"
+       class="absolute animate-float"
+       [ngStyle]="{
+         left: heart.left,
+         top: heart.top,
+         animationDelay: heart.delay,
+         animationDuration: heart.duration
+       }">
+    <span class="text-pink-200/30 text-lg">❤️</span>
+  </div>
+</div>
+
+<!-- Bokeh circles -->
+<div class="absolute inset-0 overflow-hidden pointer-events-none">
+  <div *ngFor="let b of bokeh"
+       class="absolute rounded-full bg-gradient-to-r from-pink-200/20 to-rose-200/20 animate-pulse"
+       [ngStyle]="{
+         left: b.left,
+         top: b.top,
+         width: b.width,
+         height: b.height,
+         animationDelay: b.delay,
+         animationDuration: b.duration
+       }">
+  </div>
+</div>
+
+  <!-- Main Login Card -->
+  <div class="relative z-10 flex items-center justify-center min-h-screen p-4">
+    <div class="w-full max-w-md">
+
+      <!-- Header -->
+      <div class="text-center mb-8">
+        <div class="relative inline-block mb-4">
+          <div class="w-16 h-16 mx-auto animate-pulse text-rose-400 text-4xl">❤️</div>
+          <div class="absolute -top-2 -right-2 text-pink-300 animate-bounce text-2xl">✨</div>
+        </div>
+        <h1 class="text-4xl font-bold bg-gradient-to-r from-rose-500 to-pink-600 bg-clip-text text-transparent mb-2">
+          Welcome Back, Love!
+        </h1>
+        <p class="text-rose-400 text-lg font-medium">
+          In this space, your memories come alive
+        </p>
+      </div>
+
+      <!-- Login Form -->
+      <div class="backdrop-blur-md bg-white/80 rounded-3xl shadow-2xl border border-pink-100/50 p-8 relative">
+        <div class="absolute inset-0 rounded-3xl bg-gradient-to-r from-pink-200/30 to-rose-200/30 blur-xl -z-10"></div>
+
+        <form (ngSubmit)="login()" class="space-y-6">
+          <div class="space-y-2">
+            <label class="text-rose-700 font-medium flex items-center gap-2">📧 Email Address</label>
+            <input
+              [(ngModel)]="email"
+              name="email"
+              type="email"
+              class="w-full rounded-2xl border-pink-200 focus:border-rose-400 focus:ring-rose-400/20 bg-white/90 text-rose-900 placeholder:text-rose-300 p-3"
+              placeholder="your.love@example.com"
+              required
+            />
+          </div>
+
+          <div class="space-y-2">
+            <label class="text-rose-700 font-medium flex items-center gap-2">🔒 Password</label>
+            <input
+              [(ngModel)]="password"
+              name="password"
+              type="password"
+              class="w-full rounded-2xl border-pink-200 focus:border-rose-400 focus:ring-rose-400/20 bg-white/90 text-rose-900 placeholder:text-rose-300 p-3"
+              placeholder="Your secret key to love"
+              required
+            />
+          </div>
+
+          <div class="flex items-center justify-between text-sm">
+            <!-- <label class="flex items-center gap-2 text-rose-600">
+              <input type="checkbox" class="rounded border-pink-300 text-rose-500 focus:ring-rose-400/20" />
+              Remember me
+            </label> -->
+            <button type="button" (click)="forgotPassword()" class="text-rose-500 hover:text-rose-600 transition">
+              Forgot password?
+            </button>
+          </div>
+
+          <button
+            [disabled]="isLoading"
+            class="w-full bg-gradient-to-r from-rose-400 to-pink-500 hover:from-rose-500 hover:to-pink-600 text-white font-semibold py-3 rounded-2xl shadow-lg hover:shadow-xl transition-all duration-300 disabled:opacity-50">
+            <span *ngIf="!isLoading">❤️ Sign In to Love</span>
+            <span *ngIf="isLoading">❤️ Connecting hearts...</span>
+          </button>
+        </form>
+
+        <!-- Register Link -->
+        <div class="text-center mt-6 pt-6 border-t border-pink-100">
+          <p class="text-rose-600">
+            New here?
+            <a routerLink="/admin/register" class="font-semibold text-rose-500 hover:text-rose-600 underline ml-1 cursor-pointer">
+              Create a memory account 💕
+            </a>
+          </p>
+        </div>
+      </div>
+
+      <!-- Footer -->
+      <div class="text-center mt-8">
+        <p class="text-rose-400 text-sm italic">
+          "Every love story is beautiful, but yours is our favorite" ✨ RG❤️
+        </p>
+      </div>
+    </div>
+  </div>
+</div>

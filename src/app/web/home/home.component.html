@@ -1,0 +1,83 @@
+<div class="relative min-h-full bg-gradient-to-b from-pink-50 via-white to-pink-50 overflow-hidden">
+
+  <app-floating-hearts></app-floating-hearts>
+
+  <div
+    class="absolute inset-0 bg-[radial-gradient(#ffb6c1_1px,transparent_1px)] opacity-30 [background-size:20px_20px]">
+  </div>
+
+  <div
+    class="container mx-auto px-4 py-24 flex flex-col items-center justify-center min-h-screen text-center relative z-10">
+
+    <app-animated-section animation="slide-up" [delay]="200">
+      <h1 style="font-family: 'Dancing', cursive;"
+        class="font-dancing text-3xl md:text-5xl font-bold text-pink-600 mb-6">Welcome to Our Story 💕</h1>
+    </app-animated-section>
+
+    <app-animated-section animation="fade-in" [delay]="600">
+      <p class="text-xl md:text-2xl text-gray-700 max-w-2xl mb-12 mt-6" data-id="element-77">A little surprise for the
+        one who means the world to me.</p>
+    </app-animated-section>
+
+
+    <app-animated-section animation="slide-up" [delay]="700">
+      <div class="mb-12 w-full max-w-md mx-auto text-center">
+        <div class="bg-white/70 backdrop-blur-sm px-6 py-4 rounded-2xl shadow-lg border border-pink-100">
+          <p class="text-pink-600 text-lg font-semibold mb-2">
+            💖Our Forever Began On...{{ loveStartDate | date: 'MMMM d, y' }}
+          </p>
+          <div class="flex justify-center gap-4 text-pink-700 font-bold text-xl sm:text-2xl md:text-3xl">
+            <div class="flex flex-col items-center">
+              <span>{{ counter.days }}</span>
+              <span class="text-xs text-gray-500 font-normal">Days</span>
+            </div>
+            <div class="flex flex-col items-center">
+              <span>{{ counter.hours }}</span>
+              <span class="text-xs text-gray-500 font-normal">Hours</span>
+            </div>
+            <div class="flex flex-col items-center">
+              <span>{{ counter.minutes }}</span>
+              <span class="text-xs text-gray-500 font-normal">Minutes</span>
+            </div>
+            <div class="flex flex-col items-center">
+              <span>{{ counter.seconds }}</span>
+              <span class="text-xs text-gray-500 font-normal">Seconds</span>
+            </div>
+          </div>
+        </div>
+      </div>
+
+    </app-animated-section>
+
+    <app-animated-section animation="slide-up" [delay]="900">
+      <div class="relative">
+        <div class="absolute inset-0 bg-pink-300 rounded-full blur-md opacity-30 animate-pulse"></div>
+        <!-- Angular Link Button -->
+        <a routerLink="/journey"
+          class="relative inline-flex items-center bg-gradient-to-r from-pink-500 to-pink-600 text-white font-medium px-8 py-4 rounded-full shadow-lg hover:shadow-xl transform transition duration-300 hover:-translate-y-1 hover:scale-105">
+          <span>Start the Journey</span>
+          <svg class="ml-2 h-5 w-5 animate-bounce-x" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24"
+            stroke="currentColor">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7" />
+          </svg>
+        </a>
+
+      </div>
+    </app-animated-section>
+
+    <app-animated-section animation="fade-in" [delay]="1200" class="mt-24 max-w-2xl">
+      <div class="p-8 bg-white/60 backdrop-blur-sm rounded-2xl shadow-xl border border-pink-100">
+        <h2 class="text-2xl font-semibold text-pink-700 mb-4">
+          A Journey of Love and Memories
+        </h2>
+        <p class="text-gray-700">
+          This website is a collection of our most precious moments,
+          memories, and feelings. Explore our timeline, relive our special
+          moments through photos, and discover all the little things that
+          make our love story unique.
+        </p>
+      </div>
+    </app-animated-section>
+
+  </div>
+</div>
