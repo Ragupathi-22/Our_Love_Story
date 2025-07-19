@@ -24,7 +24,6 @@ export class JourneyComponent {
     this.currentMonthItems$ = this.timeline$.pipe(
       map(items =>
         items.filter(item => {
-        console.log(items) ;
 
           const date = new Date(item.date);
           const now = new Date();

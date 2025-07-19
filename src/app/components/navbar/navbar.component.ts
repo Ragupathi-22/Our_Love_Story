@@ -3,11 +3,11 @@ import { RouterModule, Router } from '@angular/router';
 import { CommonModule } from '@angular/common';
 import { Subscription } from 'rxjs';
 import { UserService } from '../../services/userService/user.service';
-import  {  LucideAngularModule ,Settings} from 'lucide-angular';
+import { LucideAngularModule, Settings } from 'lucide-angular';
 @Component({
   selector: 'app-navbar',
   standalone: true,
-  imports: [RouterModule, CommonModule,LucideAngularModule],
+  imports: [RouterModule, CommonModule, LucideAngularModule],
   templateUrl: './navbar.component.html',
   styleUrls: ['./navbar.component.css']
 })
@@ -16,7 +16,7 @@ export class NavbarComponent implements OnInit, OnDestroy {
   scrolled = false;
   swappedText = '💞';
   isFading = false;
-  settings : any = Settings;
+  settings: any = Settings;
   private intervalId: any;
   private toggle = true;
   private nameSwap1 = 'R';
@@ -27,13 +27,14 @@ export class NavbarComponent implements OnInit, OnDestroy {
     { name: 'Home', path: '/' },
     { name: 'Our Journey', path: '/journey' },
     { name: 'Gallery', path: '/gallery' },
-    { name: 'Love Letter', path: '/letter' },
+    // { name: 'Love Letter', path: '/letter' },
     { name: 'Our Vibes', path: '/playlist' },
-    { name: 'Find the Clue', path: '/puzzle' },
-    { name: 'Memory Keeper', path: '/memory' }
+    // { name: 'Find the Clue', path: '/puzzle' },
+    { name: 'Memory Keeper', path: '/memory' },
+    { name: 'Emotions', path: '/emotion' }
   ];
 
-  constructor(public router: Router, private userService: UserService) {}
+  constructor(public router: Router, private userService: UserService) { }
 
   ngOnInit() {
     // Get initials from user profile
@@ -84,44 +85,44 @@ export class NavbarComponent implements OnInit, OnDestroy {
     this.scrolled = window.scrollY > 50;
   }
 
-@HostListener('document:click', ['$event'])
-onClickOutside(event: MouseEvent) {
-  const target = event.target as HTMLElement;
+  @HostListener('document:click', ['$event'])
+  onClickOutside(event: MouseEvent) {
+    const target = event.target as HTMLElement;
 
-  const clickedInsideSettings = target.closest('.settings-dropdown');
-  const clickedToggleBtn = target.closest('.mobile-toggle-btn');
-  const clickedInsideMobileMenu = target.closest('.mobile-menu');
+    const clickedInsideSettings = target.closest('.settings-dropdown');
+    const clickedToggleBtn = target.closest('.mobile-toggle-btn');
+    const clickedInsideMobileMenu = target.closest('.mobile-menu');
 
-  // Close settings if clicked outside
-  if (!clickedInsideSettings) {
-    this.showSettings = false;
+    // Close settings if clicked outside
+    if (!clickedInsideSettings) {
+      this.showSettings = false;
+    }
+
+    // Close mobile menu if clicked outside menu and toggle
+    if (!clickedInsideMobileMenu && !clickedToggleBtn) {
+      this.isOpen = false;
+    }
   }
-
-  // Close mobile menu if clicked outside menu and toggle
-  if (!clickedInsideMobileMenu && !clickedToggleBtn) {
-    this.isOpen = false;
-  }
-}
 
 
 
   showSettings = false;
 
-toggleSettings() {
-  this.showSettings = !this.showSettings;
-}
+  toggleSettings() {
+    this.showSettings = !this.showSettings;
+  }
 
-logout() {
-  this.userService.logout().then(() => {
-    this.router.navigate(['/login']); 
-  });
-  this.showSettings = false;
-}
+  logout() {
+    this.userService.logout().then(() => {
+      this.router.navigate(['/login']);
+    });
+    this.showSettings = false;
+  }
 
-goToAdmin() {
-  this.router.navigate(['/admin']);
-  this.showSettings = false;
-}
+  goToAdmin() {
+    this.router.navigate(['/admin']);
+    this.showSettings = false;
+  }
 
 
 

@@ -22,9 +22,7 @@ export class GallaryComponent {
 
         this.currentMonthItems$ = this.gallery$.pipe(
           map(items =>
-            items.filter(item => {
-            console.log(items) ;
-    
+            items.filter(item => {    
               const date = new Date(item.date);
               const now = new Date();
               return (

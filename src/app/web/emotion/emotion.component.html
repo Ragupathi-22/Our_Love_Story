@@ -1,0 +1,291 @@
+<div class="min-h-screen bg-gradient-to-b from-pink-50 to-white py-10 px-4">
+
+  <ng-container *ngIf="profile() as p; else loginBlock">
+    <div class="max-w-2xl md:max-w-5xl  mx-auto space-y-6">
+
+      <!-- Title -->
+      <div class="text-center mb-6 mt-10">
+        <h1 class="text-4xl md:text-5xl font-bold mb-2">Emotional Connection</h1>
+        <p class="text-gray-600 max-w-xl mx-auto">
+          Track and share your emotional journey together, strengthening your bond day by day.
+        </p>
+      </div>
+
+      <!-- Top Bar with User Info -->
+      <div class="flex justify-between items-center bg-white p-4 rounded-2xl shadow">
+        <div class="text-left">
+          <div class="text-lg font-semibold text-pink-600">
+            Hello, {{ service.emotionData()?.name || 'User' }}{{ role() === 'he' ? '❤️' : '💖' }}
+          </div>
+          <div class="text-sm text-gray-500">
+            You have {{ 2 - (getTodayCount() || 0) }} emotion log{{ (2 - (getTodayCount() || 0)) === 1 ? '' : 's' }}
+            left today
+          </div>
+        </div>
+        <button (click)="logout()" class="text-sm text-red-500 hover:underline">Logout</button>
+      </div>
+
+
+      <!-- Tabs -->
+      <div class="flex justify-center space-x-4 mb-10">
+        <button *ngFor="let tabName of ['log', 'history', 'summary']" (click)="tab.set(tabName)"
+          class="px-4 py-2 rounded-full font-semibold border" [ngClass]="{
+          'bg-pink-600 text-white': tab() === tabName,
+          'bg-white text-pink-600': tab() !== tabName
+        }">
+          {{ tabName === 'log' ? 'Log Emotion' : tabName === 'history' ? 'History' : 'Monthly Summary' }}
+        </button>
+      </div>
+
+
+      <!-- Log Emotion Tab -->
+      <div *ngIf="tab() === 'log'" class="max-w-xl mx-auto bg-white rounded-2xl shadow-md p-6">
+        <div class="flex justify-between items-center mb-4">
+          <h2 class="text-xl font-semibold text-gray-800">How are you feeling today?</h2>
+          <span class="text-gray-500">Jul 19</span>
+        </div>
+
+        <!-- Emoji Selector -->
+        <div class="grid grid-cols-5 gap-4 mb-6">
+          <div *ngFor="let emoji of emojis" (click)="selectEmoji(emoji)"
+            class="cursor-pointer rounded-xl text-center p-3 transition border-2" [ngClass]="{
+         'bg-pink-50 border-pink-400': emoji.label === 'Love',
+         'bg-yellow-100 border-transparent': emoji.label === 'Happy',
+         'bg-blue-100 border-transparent': emoji.label === 'Sad',
+         'bg-red-100 border-transparent': emoji.label === 'Angry',
+         'border-pink-500 bg-pink-100': emoji.label === 'Overwhelmed',
+         'ring-2 ring-pink-500': selectedEmoji?.emoji === emoji.emoji
+       }">
+            <div class="text-2xl">{{ emoji.emoji }}</div>
+            <div class="text-xs mt-1 text-gray-700">{{ emoji.label }}</div>
+          </div>
+        </div>
+
+        <!-- Textarea -->
+        <div class="mb-4">
+          <label class="block text-sm font-medium text-gray-700 mb-1">Add a note (optional)</label>
+          <textarea maxlength="100" rows="3" [(ngModel)]="note"
+            class="w-full border border-gray-300 rounded-lg p-3 focus:ring-pink-500 focus:border-pink-500 text-sm"
+            placeholder="How are you feeling? (max 100 chars)">
+      </textarea>
+          <div class="text-right text-xs text-gray-400 mt-1">0/100</div>
+        </div>
+
+        <!-- Log Button -->
+        <button (click)="submitEmotion()" [disabled]="loading()"
+          class="bg-pink-500 text-white rounded-lg px-6 py-2 w-full font-semibold hover:bg-pink-600 transition disabled:opacity-60 disabled:cursor-not-allowed flex justify-center items-center gap-2">
+          <ng-container *ngIf="!loading(); else logLoadingTemplate">
+            Log Your Emotion
+          </ng-container>
+          <ng-template #logLoadingTemplate>
+            <span class="animate-spin border-2 border-white border-t-transparent rounded-full w-4 h-4"></span>
+          </ng-template>
+        </button>
+
+
+        <!-- Limit Warning -->
+        <p *ngIf="!canAddMoreToday()" class="text-sm text-red-500 text-center">
+          You can only add 2 emotions per day 💡
+        </p>
+      </div>
+
+      <!-- Emotion History Tab -->
+      <div *ngIf="tab() === 'history'" class="bg-white p-6 rounded-2xl shadow space-y-4">
+        <h2 class="text-xl font-bold text-pink-700">Emotion History</h2>
+
+        <div class="max-h-96 overflow-y-auto space-y-3">
+          <div *ngFor="let e of getSortedEmotions()" class="border p-4 rounded-xl bg-pink-50">
+            <div class="flex items-center gap-3">
+              <span class="text-2xl">{{ e.emoji }}</span>
+              <div>
+                <div class="font-semibold text-pink-700">{{ e.label }} - {{ e.date }}</div>
+                <div class="text-gray-600 text-sm">{{ e.note }}</div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Monthly Summary Progress Bars -->
+      <div class="bg-white p-6 rounded-2xl shadow space-y-4 mb-6" *ngIf="tab() === 'summary'">
+
+        <div class="flex justify-between items-center mb-4 bg-pink-50 px-6 py-3 rounded-lg">
+          <button (click)="goToPreviousMonth()" class="text-pink-500 hover:text-pink-700">
+            <lucide-icon [name]="ArrowLeft" />
+          </button>
+          <div class="text-xl font-bold">
+            {{ selectedMonth() | date: 'MMMM yyyy' }}
+          </div>
+          <button (click)="goToNextMonth()" [disabled]="!canGoToNextMonth()"
+            class="text-pink-500 hover:text-pink-700 disabled:opacity-30">
+            <lucide-icon [name]="ArrowRight" />
+          </button>
+
+        </div>
+
+
+        <div class="grid grid-cols-1 md:grid-cols-2 gap-8">
+          <!-- He's Summary -->
+          <div class="p-4 bg-pink-50 rounded-xl">
+            <h3 class="text-lg font-semibold text-blue-700 mb-2">He</h3>
+            <ng-container *ngIf="heSummary as summary">
+              <div *ngFor="let emoji of emojis" class="mb-4">
+                <div class="flex justify-between items-center mb-1 text-sm">
+                  <span class="font-medium">
+                    {{ emoji.emoji }} {{ emoji.label }}
+                  </span>
+                  <span class="text-gray-600">
+                    {{ getSummary('he')[emoji.label] || 0 }} logs
+                  </span>
+                </div>
+                <div class="w-full h-4 bg-gray-200 rounded-full overflow-hidden">
+                  <div class="h-4 rounded-full transition-all duration-300 ease-in-out"
+                    [style.width]="getBarWidth(getSummary('he')[emoji.label], getMaxValue(getSummary('he')))" [ngClass]="{
+                          'bg-blue-500': role() === 'he',
+                          'bg-pink-500': role() === 'she'
+                        }"></div>
+                </div>
+              </div>
+            </ng-container>
+            <div>
+              <h4 class="text-sm font-semibold mt-4 text-gray-600">Logs:</h4>
+              <div class="max-h-48 overflow-y-auto mt-2 space-y-2">
+                <div *ngFor="let entry of getMonthlyLogs('he')" class="text-sm bg-white p-2 rounded shadow ">
+                  <span class="text-lg">{{ entry.emoji }}</span>
+                  <span class="ml-2 font-medium">{{ entry.label }}</span> –
+                  <span class="text-gray-500">{{ entry.note || 'No note' }}</span>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <!-- She's Summary -->
+          <div class="p-4 bg-pink-50 rounded-xl">
+            <h3 class="text-lg font-semibold text-pink-700 mb-2">She</h3>
+            <ng-container *ngIf="sheSummary as summary">
+              <div *ngFor="let emoji of emojis" class="mb-4">
+                <div class="flex justify-between items-center mb-1 text-sm">
+                  <span class="font-medium">{{ emoji.label }} {{emoji.emoji}}</span>
+                  <span class="text-gray-600">{{ getSummary('she')[emoji.label] || 0 }} logs</span>
+                </div>
+                <div class="w-full h-4 bg-gray-200 rounded-full overflow-hidden">
+                  <div class="h-4 rounded-full transition-all"
+                    [style.width]="getBarWidth(getSummary('she')[emoji.label], getMaxValue(getSummary('she')))"
+                    [ngClass]="{
+                                'bg-blue-500': role() === 'he',
+                                'bg-pink-500': role() === 'she'
+                              }">
+                  </div>
+                </div>
+              </div>
+
+              <h4 class="text-sm font-semibold mt-4 text-gray-600">Logs:</h4>
+              <div class="max-h-48 overflow-y-auto mt-2 space-y-2">
+                <div *ngFor="let entry of getMonthlyLogs('she')" class="text-sm bg-white p-2 rounded shadow">
+                  <span class="text-lg">{{ entry.emoji }}</span>
+                  <span class="ml-2 font-medium">{{ entry.label }}</span> –
+                  <span class="text-gray-500">{{ entry.note || 'No note' }}</span>
+                </div>
+              </div>
+
+            </ng-container>
+          </div>
+        </div>
+      </div>
+
+
+    </div>
+  </ng-container>
+  <ng-template #loginBlock>
+    <div class="flex items-center justify-center min-h-screen mt-10">
+      <div class="bg-white shadow-lg w-full max-w-md p-8 text-center rounded-xl">
+
+        <!-- Heart Icon -->
+        <div class="flex justify-center mb-4">
+          <div class="bg-pink-100 rounded-full p-4">
+            <svg xmlns="http://www.w3.org/2000/svg" class="h-8 w-8 text-pink-500" fill="none" viewBox="0 0 24 24"
+              stroke="currentColor">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                d="M4.318 6.318a4.5 4.5 0 000 6.364L12 20.364l7.682-7.682a4.5 4.5 0 00-6.364-6.364L12 7.636l-1.318-1.318a4.5 4.5 0 00-6.364 0z" />
+            </svg>
+          </div>
+        </div>
+
+        <!-- Title -->
+        <h2 class="text-2xl font-bold text-pink-600 mb-1">
+          {{ isLogin() ? 'Welcome Back' : 'Create Account' }}
+        </h2>
+        <p class="text-gray-600 mb-6">
+          {{ isLogin()
+          ? 'Log in to continue your emotional journey'
+          : 'Register to start your emotional journey' }}
+        </p>
+
+        <!-- Role Selection -->
+        <div class="mb-6">
+          <label class="block text-lg font-semibold mb-2">Select your's:</label>
+          <div class="flex gap-6 items-center justify-center">
+            <label class="inline-flex items-center">
+              <input type="radio" class="form-radio text-purple-500" name="role" value="she"
+                [(ngModel)]="selectedRole" />
+              <span class="ml-2 text-gray-700">She</span>
+            </label>
+            <label class="inline-flex items-center">
+              <input type="radio" class="form-radio text-pink-500" name="role" value="he" [(ngModel)]="selectedRole" />
+              <span class="ml-2 text-gray-700">He</span>
+            </label>
+          </div>
+        </div>
+
+        <!-- Name -->
+        <div class="text-left mb-4">
+          <label class="block text-sm font-medium mb-1">Your Name</label>
+          <div class="flex items-center border rounded px-3 py-2">
+            <svg class="w-5 h-5 text-gray-400 mr-2" fill="none" stroke="currentColor" stroke-width="1.5"
+              viewBox="0 0 24 24">
+              <path stroke-linecap="round" stroke-linejoin="round"
+                d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z" />
+            </svg>
+            <input [(ngModel)]="name" class="w-full outline-none" placeholder="Enter your name" />
+          </div>
+        </div>
+
+        <!-- Password -->
+        <div class="text-left mb-6">
+          <label class="block text-sm font-medium mb-1">Password</label>
+          <div class="flex items-center border rounded px-3 py-2">
+            <svg class="w-5 h-5 text-gray-400 mr-2" fill="none" stroke="currentColor" stroke-width="1.5"
+              viewBox="0 0 24 24">
+              <path stroke-linecap="round" stroke-linejoin="round"
+                d="M12 11c0-.944.737-1.714 1.654-1.714H18a1.714 1.714 0 011.714 1.714v4.572a1.714 1.714 0 01-1.714 1.714h-4.346A1.714 1.714 0 0112 15.572V11z" />
+              <path stroke-linecap="round" stroke-linejoin="round" d="M16 7a2 2 0 00-4 0v4" />
+            </svg>
+            <input [(ngModel)]="password" type="password" class="w-full outline-none"
+              placeholder="Enter your password" />
+          </div>
+        </div>
+
+        <!-- Login/Register Button -->
+        <button (click)="isLogin() ? login() : register()" [disabled]="loading()"
+          class="bg-pink-500 text-white rounded-lg px-6 py-2 w-full font-semibold hover:bg-pink-600 transition disabled:opacity-60 disabled:cursor-not-allowed flex justify-center items-center gap-2">
+          <ng-container *ngIf="!loading(); else loadingTemplate">
+            {{ isLogin() ? 'Login' : 'Register' }}
+          </ng-container>
+          <ng-template #loadingTemplate>
+            <span class="animate-spin border-2 border-white border-t-transparent rounded-full w-4 h-4"></span>
+          </ng-template>
+        </button>
+
+
+        <!-- Switch Mode -->
+        <p class="mt-4 text-sm text-gray-600">
+          {{ isLogin() ? `Don't have an account?` : 'Already have an account?' }}
+          <button (click)="toggleLoginRegister()" class="text-pink-500 font-medium hover:underline">
+            {{ isLogin() ? 'Register' : 'Login' }}
+          </button>
+        </p>
+      </div>
+    </div>
+
+  </ng-template>
+</div>

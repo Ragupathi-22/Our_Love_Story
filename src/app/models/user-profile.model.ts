@@ -30,6 +30,31 @@ export interface PeriodItem {
   endDate: string;
 }
 
+export interface BucketItem {
+  id: string;
+  title: string;
+  date: string;
+  completed: boolean;
+}
+
+export interface EmotionEntry {
+  emoji: string;
+  label: string;
+  note: string;
+  date: string;
+}
+
+export interface EmotionProfile {
+  name: string;
+  password: string;
+  emotions: EmotionEntry[];
+}
+export interface EmotionProfiles {
+  he?: EmotionProfile;
+  she?: EmotionProfile;
+}
+
+
 export interface UserProfile {
   uid: string;
   yourName: string;
@@ -43,6 +68,8 @@ export interface UserProfile {
   gallery: GalleryItem[];
   reminders: ReminderItem[];
   periods: PeriodItem[];
+  bucketList: BucketItem[];
+  emotionProfiles: EmotionProfiles
   createdAt: {
     seconds: number;
     nanoseconds: number;

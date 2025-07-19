@@ -146,7 +146,6 @@ getNoOfDays(): Observable<string> {
   );
 }
 
-
   async logout(): Promise<void> {
   try {
     await signOut(this.auth);
@@ -154,93 +153,6 @@ getNoOfDays(): Observable<string> {
     this.userProfileSubject.next(null);
   } catch (error) {
     console.error('Logout failed:', error);
-  }
-}
-
-
-//Get Remainders
-getReminders(): Observable<ReminderItem[]> {
-  this.loadingService.show();
-  return this.userProfile$.pipe(
-    map(profile => {
-      this.loadingService.hide();
-      return profile?.reminders ?? [];
-    })
-  );
-}
-
-//add Reminder
-async addReminder(reminder: ReminderItem): Promise<void> {
-  const uid = this.getCurrentUserId();
-  if (!uid) return;
-
-  const userRef = doc(this.firestore, 'users', uid);
-  const snapshot = await getDoc(userRef);
-
-  if (snapshot.exists()) {
-    const data = snapshot.data() as UserProfile;
-    const updatedReminders = [...(data.reminders ?? []), reminder];
-    await updateDoc(userRef, { reminders: updatedReminders });
-    this.loadUserProfile(uid);
-  }
-}
-
-//delete Reminder
-async deleteReminder(reminderId: string): Promise<void> {
-  const uid = this.getCurrentUserId();
-  if (!uid) return;
-
-  const userRef = doc(this.firestore, 'users', uid);
-  const snapshot = await getDoc(userRef);
-
-  if (snapshot.exists()) {
-    const data = snapshot.data() as UserProfile;
-    const updatedReminders = (data.reminders ?? []).filter(r => r.id !== reminderId);
-    await updateDoc(userRef, { reminders: updatedReminders });
-    this.loadUserProfile(uid);
-  }
-}
-
-
-//get Periods
-getPeriods(): Observable<PeriodItem[]> {
-  this.loadingService.show();
-  return this.userProfile$.pipe(
-    map(profile => {
-      this.loadingService.hide();
-      return profile?.periods ?? [];
-    })
-  );
-}
-
-//add Period
-async addPeriod(period: PeriodItem): Promise<void> {
-  const uid = this.getCurrentUserId();
-  if (!uid) return;
-
-  const userRef = doc(this.firestore, 'users', uid);
-  const snapshot = await getDoc(userRef);
-
-  if (snapshot.exists()) {
-    const data = snapshot.data() as UserProfile;
-    const updatedPeriods = [...(data.periods ?? []), period];
-    await updateDoc(userRef, { periods: updatedPeriods });
-    this.loadUserProfile(uid);
-  }
-}
-
-async deletePeriod(periodId: string): Promise<void> {
-  const uid = this.getCurrentUserId();
-  if (!uid) return;
-
-  const userRef = doc(this.firestore, 'users', uid);
-  const snapshot = await getDoc(userRef);
-
-  if (snapshot.exists()) {
-    const data = snapshot.data() as UserProfile;
-    const updatedPeriods = (data.periods ?? []).filter(p => p.id !== periodId);
-    await updateDoc(userRef, { periods: updatedPeriods });
-    this.loadUserProfile(uid);
   }
 }
 

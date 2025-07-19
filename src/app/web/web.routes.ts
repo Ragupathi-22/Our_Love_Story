@@ -36,7 +36,11 @@ export const webRoutes: Routes = [
       {
         path: 'memory',
         loadComponent: () => import('./memory-page/memory-page.component').then(m => m.MemoryPageComponent)
-      }
+      },
+      {
+        path: 'emotion',
+        loadComponent: () => import('./emotion/emotion.component').then(m => m.EmotionComponent)
+      },
     ]
   }
 ];

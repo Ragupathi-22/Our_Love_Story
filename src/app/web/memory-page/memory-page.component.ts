@@ -1,12 +1,13 @@
 // memory-page.component.ts
 import { Component, computed, effect, inject, signal } from '@angular/core';
 import { v4 as uuidv4 } from 'uuid';
-import { ReminderItem, PeriodItem } from '../../models/user-profile.model';
-import { UserService } from '../../services/userService/user.service';
+import { ReminderItem, PeriodItem, BucketItem } from '../../models/user-profile.model';
 import { LucideAngularModule, X, HeartIcon, Bell, Calendar } from 'lucide-angular';
 import { AsyncPipe, CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
-import {  ToastrService } from 'ngx-toastr';
+import { ToastrService } from 'ngx-toastr';
+import { MemoryService } from '../../services/memoryService/memory.service';
+import { UserService } from '../../services/userService/user.service';
 
 @Component({
   selector: 'app-memory-page',
@@ -20,36 +21,23 @@ export class MemoryPageComponent {
   heart = HeartIcon;
   bell = Bell;
   calendar = Calendar;
- 
 
-  private userService = inject(UserService);
 
-  activeTab = signal<'reminders' | 'period'>('reminders');
-
+  private memoryService = inject(MemoryService);
+  private userService = inject(UserService)
+  activeTab = signal<'reminders' | 'period' | 'bucket'>('reminders');
   refreshTrigger = signal(0);
+  activeReminderTab = signal<'thisMonth' | 'all'>('thisMonth');
+  reminderSearchTerm = signal('');
 
-readonly reminders = signal<ReminderItem[]>([]);
-readonly periods = signal<PeriodItem[]>([]);
 
-
-constructor(private toastr :ToastrService) {
-  effect(() => {
-    this.userService.userProfile$.subscribe(profile => {
-      const sortedReminders = (profile?.reminders ?? []).sort(
-        (a, b) => new Date(b.date).getTime() - new Date(a.date).getTime()
-      );
-      const sortedPeriods = (profile?.periods ?? []).sort(
-        (a, b) => new Date(b.startDate).getTime() - new Date(a.startDate).getTime()
-      );
-
-      this.reminders.set(sortedReminders);
-      this.periods.set(sortedPeriods);
-    });
-  });
-}
+  readonly reminders = signal<ReminderItem[]>([]);
+  readonly periods = signal<PeriodItem[]>([]);
+  readonly bucketList = signal<BucketItem[]>([]);
 
   newReminder = signal<{ text: string; date: string }>({ text: '', date: '' });
   newPeriod = signal<{ startDate: string; endDate: string }>({ startDate: '', endDate: '' });
+  newBucketItem = signal<{ title: string; date: string }>({ title: '', date: '' });
 
   isAddingReminder = signal(false);
   isDeletingReminder = signal(false);
@@ -57,8 +45,31 @@ constructor(private toastr :ToastrService) {
   isDeletingPeriod = signal(false);
   isLoading = signal(false);
 
+
+  constructor(private toastr: ToastrService) {
+    effect(() => {
+      this.userService.userProfile$.subscribe(profile => {
+        const sortedReminders = (profile?.reminders ?? []).sort(
+          (a, b) => new Date(b.date).getTime() - new Date(a.date).getTime()
+        );
+        const sortedPeriods = (profile?.periods ?? []).sort(
+          (a, b) => new Date(b.startDate).getTime() - new Date(a.startDate).getTime()
+        );
+        const sortedBucket = (profile?.bucketList ?? []).sort(
+          (a, b) => new Date(b.date).getTime() - new Date(a.date).getTime()
+        );
+
+
+        this.bucketList.set(sortedBucket);
+        this.reminders.set(sortedReminders);
+        this.periods.set(sortedPeriods);
+      });
+    });
+  }
+
+
   showToast(msg: string) {
-    this.toastr.warning(msg);
+    this.toastr.success(msg);
   }
 
   updateReminderText(text: string) {
@@ -81,19 +92,30 @@ constructor(private toastr :ToastrService) {
     this.newPeriod.set({ ...current, endDate });
   }
 
+  updateBucketTitle(title: string) {
+    const curr = this.newBucketItem();
+    this.newBucketItem.set({ ...curr, title });
+  }
+
+  updateBucketDate(date: string) {
+    const curr = this.newBucketItem();
+    this.newBucketItem.set({ ...curr, date });
+  }
+
   async addReminder() {
     const { text, date } = this.newReminder();
-    if (!text || !date){
-      this.toastr.error('Please make sure all fields are filled out...!')
-      return};
+    if (!text || !date) {
+      this.toastr.error('Please fill in both title and date...!')
+      return
+    };
 
     this.isLoading.set(true);
     try {
       const reminder: ReminderItem = { id: uuidv4(), title: text, date };
-      await this.userService.addReminder(reminder);
+      await this.memoryService.addReminder(reminder);
       this.newReminder.set({ text: '', date: '' });
       this.refreshTrigger.update(v => v + 1);
-      this.showToast('Reminder added!');
+      this.showToast('Event added!');
     } finally {
       this.isLoading.set(false);
     }
@@ -102,24 +124,44 @@ constructor(private toastr :ToastrService) {
   async deleteReminder(id: string) {
     this.isLoading.set(true);
     try {
-      await this.userService.deleteReminder(id);
+      await this.memoryService.deleteReminder(id);
       this.refreshTrigger.update(v => v + 1);
-      this.showToast('Reminder deleted!');
+      this.showToast('Event deleted!');
     } finally {
       this.isLoading.set(false);
     }
   }
 
+  filteredReminders = computed(() => {
+    const search = this.reminderSearchTerm().toLowerCase();
+    return this.reminders()
+      .filter(reminder => {
+        const matchesSearch = reminder.title.toLowerCase().includes(search);
+        const reminderMonth = new Date(reminder.date).getMonth();
+        const currentMonth = new Date().getMonth();
+
+        if (this.activeReminderTab() === 'thisMonth') {
+          return reminderMonth === currentMonth && matchesSearch;
+        } else {
+          return matchesSearch;
+        }
+      })
+      .sort((a, b) => new Date(b.date).getTime() - new Date(a.date).getTime());
+  });
+
+
+
   async addPeriod() {
     const { startDate, endDate } = this.newPeriod();
     if (!startDate || !endDate) {
       this.toastr.error('Please make sure all fields are filled out...!')
-      return};
+      return
+    };
 
     this.isLoading.set(true);
     try {
       const period: PeriodItem = { id: uuidv4(), startDate, endDate };
-      await this.userService.addPeriod(period);
+      await this.memoryService.addPeriod(period);
       this.newPeriod.set({ startDate: '', endDate: '' });
       this.refreshTrigger.update(v => v + 1);
       this.showToast('Period added!');
@@ -131,7 +173,7 @@ constructor(private toastr :ToastrService) {
   async deletePeriod(id: string) {
     this.isLoading.set(true);
     try {
-      await this.userService.deletePeriod(id);
+      await this.memoryService.deletePeriod(id);
       this.refreshTrigger.update(v => v + 1);
       this.showToast('Period deleted!');
     } finally {
@@ -174,4 +216,49 @@ constructor(private toastr :ToastrService) {
       endDate: this.formatDate(nextEnd.toISOString().split('T')[0]),
     };
   });
+
+  async addBucketItem() {
+    const { title, date } = this.newBucketItem();
+    if (!title || !date) {
+      this.toastr.error('Please fill in both title and date');
+      return;
+    }
+
+    this.isLoading.set(true);
+    try {
+      const item: BucketItem = {
+        id: uuidv4(),
+        title,
+        date,
+        completed: false
+      };
+      await this.memoryService.addBucketItem(item);
+      this.newBucketItem.set({ title: '', date: '' });
+      this.refreshTrigger.update(v => v + 1);
+      this.showToast('Bucket list item added!');
+    } finally {
+      this.isLoading.set(false);
+    }
+  }
+
+  async deleteBucketItem(id: string) {
+    this.isLoading.set(true);
+    try {
+      await this.memoryService.deleteBucketItem(id);
+      this.refreshTrigger.update(v => v + 1);
+      this.showToast('Item deleted');
+    } finally {
+      this.isLoading.set(false);
+    }
+  }
+
+  async toggleBucketCompleted(id: string, completed: boolean) {
+    this.isLoading.set(true);
+    try {
+      await this.memoryService.toggleBucketItemCompletion(id, completed);
+    } finally {
+      this.isLoading.set(false);
+    }
+  }
+
 }
