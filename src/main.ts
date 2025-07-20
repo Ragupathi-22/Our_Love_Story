@@ -6,6 +6,8 @@ import { AppComponent } from './app/app.component';
 import { appConfig } from './app/app.config';
 import { getStorage, provideStorage } from '@angular/fire/storage';
 import { environment } from './environment';
+import { isDevMode } from '@angular/core';
+import { provideServiceWorker } from '@angular/service-worker';
 
 bootstrapApplication(AppComponent, {
   providers: [
@@ -13,7 +15,10 @@ bootstrapApplication(AppComponent, {
     provideAuth(() => getAuth()),
     provideStorage(() => getStorage()),
     provideFirestore(() => getFirestore()),
-    ...appConfig.providers
+    ...appConfig.providers, provideServiceWorker('ngsw-worker.js', {
+            enabled: !isDevMode(),
+            registrationStrategy: 'registerWhenStable:30000'
+          })
   ]
 }).catch(err => console.error(err));
 

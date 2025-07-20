@@ -1,20 +1,14 @@
 import {
   AppCheckInstances,
   AuthInstances
-} from "./chunk-TGSLXWNG.js";
-import {
-  FirebaseApp,
-  FirebaseApps,
-  VERSION,
-  ɵAngularFireSchedulers,
-  ɵgetAllInstancesOf,
-  ɵgetDefaultInstanceOf,
-  ɵzoneWrap
-} from "./chunk-4UDGI3Q2.js";
+} from "./chunk-IQDYAXUT.js";
 import {
   Component,
+  FirebaseApp,
+  FirebaseApps,
   FirebaseError,
   SDK_VERSION,
+  VERSION,
   _getProvider,
   _isFirebaseServerApp,
   _registerComponent,
@@ -25,8 +19,12 @@ import {
   isCloudWorkstation,
   pingServer,
   registerVersion,
-  updateEmulatorBanner
-} from "./chunk-CBSKA7OU.js";
+  updateEmulatorBanner,
+  ɵAngularFireSchedulers,
+  ɵgetAllInstancesOf,
+  ɵgetDefaultInstanceOf,
+  ɵzoneWrap
+} from "./chunk-UDSU6OIK.js";
 import "./chunk-WUQX2XWV.js";
 import {
   InjectionToken,
@@ -39,8 +37,8 @@ import {
   ɵɵdefineInjector,
   ɵɵdefineNgModule
 } from "./chunk-WSTN3ZIO.js";
-import "./chunk-BXL443VD.js";
 import "./chunk-64UGZ4AE.js";
+import "./chunk-BXL443VD.js";
 import {
   Observable,
   concatMap,
