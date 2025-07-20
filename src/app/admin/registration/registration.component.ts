@@ -102,61 +102,62 @@ export class RegistrationComponent {
   }
 
   async onSubmit() {
-    // Show confirmation popup
-const result = await Swal.fire({
-  title: 'Are you sure ?',
-   html: `
+
+    if (!this.isSubscriptionVerified) {
+      this.toastr.warning('Please verify your subscription first!');
+      this.btnHitter = false;
+      return;
+    }
+
+    if (this.registerForm.valid) {
+      const {
+        email,
+        password,
+        yourName,
+        partnerName,
+        yourDob,
+        partnerDob,
+        loveStartDate,
+      } = this.registerForm.value;
+
+      // Show confirmation popup
+      const result = await Swal.fire({
+        title: 'Are you sure ?',
+        html: `
     <p>Please take a moment to review everything one last time.</p>
     <p class="mt-2 text-pink-600 font-semibold">Once submitted, it cannot be edited again. 🖋️</p>
     <p class="mt-1 italic">These memories will be part of our forever story. 💖</p>
   `,
-  icon: 'warning',
-  showCancelButton: true,
-  confirmButtonColor: '#e91e63', // soft pink
-  cancelButtonColor: '#9e9e9e',  // gray
-  confirmButtonText: 'Yes, I’m sure ❤️',
-  cancelButtonText: 'Let me check again 📝',
-});
+        icon: 'warning',
+        showCancelButton: true,
+        confirmButtonColor: '#e91e63', // soft pink
+        cancelButtonColor: '#9e9e9e',  // gray
+        confirmButtonText: 'Yes, I’m sure ❤️',
+        cancelButtonText: 'Let me check again 📝',
+      });
 
-    if (result.isConfirmed) {
-      this.btnHitter = true;
-
-      if (!this.isSubscriptionVerified) {
-        this.toastr.warning('Please verify your subscription first!');
-        this.btnHitter = false;
-        return;
-      }
-
-      if (this.registerForm.valid) {
-        const {
-          email,
-          password,
-          yourName,
-          partnerName,
-          yourDob,
-          partnerDob,
-          loveStartDate,
-        } = this.registerForm.value;
+      if (result.isConfirmed) {
+        this.btnHitter = true;
 
         try {
-          // const userCredential = await createUserWithEmailAndPassword(this.auth, email, password);
-          // const uid = userCredential.user.uid;
+          const userCredential = await createUserWithEmailAndPassword(this.auth, email, password);
+          const uid = userCredential.user.uid;
 
-          // const userDoc = doc(this.firestore, 'users', uid);
-          // await setDoc(userDoc, {
-          //   uid,
-          //   email,
-          //   yourName,
-          //   partnerName,
-          //   yourDob,
-          //   partnerDob,
-          //   loveStartDate,
-          //   subscriptionKey: this.subscriptionKey.trim(), // ✅ Store it
-          //   createdAt: new Date(),
-          //   timeline: [],
-          //   gallery: [],
-          //   playlistUrl: [],
-          // });
+          const userDoc = doc(this.firestore, 'users', uid);
+          await setDoc(userDoc, {
+            uid,
+            email,
+            yourName,
+            partnerName,
+            yourDob,
+            partnerDob,
+            loveStartDate,
+            subscriptionKey: this.subscriptionKey.trim(), // ✅ Store it
+            createdAt: new Date(),
+            timeline: [],
+            gallery: [],
+            playlistUrl: [],
+          });
 
           this.toastr.success('Registration successful!', 'Welcome');
           this.router.navigate(['/admin/layout']);
@@ -181,12 +182,13 @@ const result = await Swal.fire({
         } finally {
           this.btnHitter = false;
         }
-
-      } else {
-        this.btnHitter = false;
-        this.registerForm.markAllAsTouched();
-        this.toastr.warning('Please complete all required fields.', 'Validation Error');
       }
+
+    } else {
+      this.btnHitter = false;
+      this.registerForm.markAllAsTouched();
+      this.toastr.warning('Please complete all required fields.', 'Validation Error');
     }
+
   }
 }

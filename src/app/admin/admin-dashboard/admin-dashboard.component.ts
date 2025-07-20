@@ -82,7 +82,7 @@ export class AdminDashboardComponent {
       },
       {
         title: 'Milestones',
-        count: this.timelineItems.filter(item => item.title.toLowerCase().includes('anniversary') || item.title.toLowerCase().includes('milestone')).length,
+        count: '∞',
         icon: '🌟',
         color: 'from-yellow-500 to-orange-500'
       }

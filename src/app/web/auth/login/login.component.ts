@@ -26,6 +26,10 @@ export class LoginComponent {
   }
 
   async login() {
+    if(!this.email || !this.password) {
+      this.toastr.error('Almost there! Just need both heartbeats — email and password 💑');
+      return;
+    }
     this.isLoading = true;
     try {
       await this.auth.login(this.email, this.password);

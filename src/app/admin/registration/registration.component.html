@@ -1,39 +1,35 @@
 <div class="min-h-screen flex items-center justify-center bg-gradient-to-br from-pink-50 via-rose-50 to-red-50 p-4">
-  <div class="w-full max-w-lg shadow-2xl bg-white/80 backdrop-blur-sm rounded-lg">
+  <!-- <div class="w-full max-w-lg shadow-2xl bg-white/80 backdrop-blur-sm rounded-lg"> -->
+  <div class="w-full max-w-lg shadow-2xl bg-white/90 backdrop-blur-md rounded-lg border border-pink-100">
 
     <!-- Header -->
     <div class="text-center space-y-4 px-6 py-6">
-      <div class="mx-auto w-16 h-16 bg-gradient-to-br from-white-500 to-pink-500 rounded-full flex items-center justify-center">
+      <div
+        class="mx-auto w-16 h-16 bg-gradient-to-br from-white-500 to-pink-500 rounded-full flex items-center justify-center">
         <span class="text-white text-2xl">💕</span>
       </div>
       <h2 class="text-3xl font-bold bg-gradient-to-r from-pink-600 to-rose-600 bg-clip-text text-transparent">
-        Our Story Admin
+        Our Soulprints Admin
       </h2>
-      <p class="text-gray-600">Create your beautiful love story dashboard</p>
+      <p class="text-gray-600">Create your beautiful Soulprints dashboard</p>
     </div>
 
     <!-- Show this block if NOT verified -->
     <div *ngIf="!isSubscriptionVerified" class="px-6 pb-6">
       <label class="block text-sm font-medium mb-2 text-rose-600">🔑 Subscription Key</label>
-      <input
-        type="text"
-        [(ngModel)]="subscriptionKey"
+      <input type="text" [(ngModel)]="subscriptionKey"
         class="w-full border border-pink-300 rounded-lg px-4 py-2 mb-4 focus:outline-none focus:ring-2 focus:ring-pink-400"
-        placeholder="Enter Subscription code...!!"
-      />
-<button
-  (click)="verifySubscription()"
-  [disabled]="isVerifyingSubscription"
-  class="px-4 py-2 rounded bg-pink-500 text-white hover:bg-pink-600 disabled:opacity-50 flex items-center justify-center gap-2"
->
-  <ng-container *ngIf="!isVerifyingSubscription; else loading">
-    Verify
-  </ng-container>
-  <ng-template #loading>
-    <span class="animate-spin border-2 border-white border-t-transparent rounded-full w-4 h-4"></span>
-    Verifying...
-  </ng-template>
-</button>
+        placeholder="Enter Subscription code...!!" />
+      <button (click)="verifySubscription()" [disabled]="isVerifyingSubscription"
+        class="px-4 py-2 rounded bg-pink-500 text-white hover:bg-pink-600 disabled:opacity-50 flex items-center justify-center gap-2">
+        <ng-container *ngIf="!isVerifyingSubscription; else loading">
+          Verify
+        </ng-container>
+        <ng-template #loading>
+          <span class="animate-spin border-2 border-white border-t-transparent rounded-full w-4 h-4"></span>
+          Verifying...
+        </ng-template>
+      </button>
 
     </div>
 
@@ -43,16 +39,17 @@
       <!-- Names -->
       <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
         <div>
-          <label for="yourName" class="block text-sm font-medium">Your Name</label>
+          <label for="yourName" class="block text-sm font-medium ">Your Name</label>
           <input id="yourName" type="text" formControlName="yourName"
-            class="w-full rounded-md border-gray-300 mt-2 p-2 shadow-sm focus:ring-pink-500 focus:border-pink-500"
+            class="w-full rounded-md border border-gray-300 bg-white text-gray-900 mt-2 p-2 shadow focus:ring-2 focus:ring-pink-500 focus:border-pink-500"
             [ngClass]="{'border-red-500': isInvalid('yourName')}" />
-          <p *ngIf="isInvalid('yourName')" class="text-sm text-red-500">Your name is required</p>
+          <p *ngIf="isInvalid('yourName')" class="text-sm text-red-500 mt-1">Your name is required</p>
         </div>
+
         <div>
           <label for="partnerName" class="block text-sm font-medium">Partner's Name</label>
           <input id="partnerName" type="text" formControlName="partnerName"
-            class="w-full rounded-md border-gray-300 mt-2 p-2 shadow-sm focus:ring-pink-500 focus:border-pink-500"
+            class="w-full rounded-md border border-gray-300 bg-white text-gray-900 mt-2 p-2 shadow focus:ring-2 focus:ring-pink-500 focus:border-pink-500"
             [ngClass]="{'border-red-500': isInvalid('partnerName')}" />
           <p *ngIf="isInvalid('partnerName')" class="text-sm text-red-500">Partner's name is required</p>
         </div>
@@ -63,14 +60,14 @@
         <div>
           <label for="yourDob" class="block text-sm font-medium">Your DOB</label>
           <input id="yourDob" [max]="yesterday" type="date" formControlName="yourDob"
-            class="w-full rounded-md border-gray-300 mt-2 p-2 shadow-sm focus:ring-pink-500 focus:border-pink-500"
+            class="w-full rounded-md border border-gray-300 bg-white text-gray-900 mt-2 p-2 shadow focus:ring-2 focus:ring-pink-500 focus:border-pink-500"
             [ngClass]="{'border-red-500': isInvalid('yourDob')}" />
           <p *ngIf="isInvalid('yourDob')" class="text-sm text-red-500">Your DOB is required</p>
         </div>
         <div>
           <label for="partnerDob" class="block text-sm font-medium">Partner's DOB</label>
           <input id="partnerDob" [max]="yesterday" type="date" formControlName="partnerDob"
-            class="w-full rounded-md border-gray-300 mt-2 p-2 shadow-sm focus:ring-pink-500 focus:border-pink-500"
+            class="w-full rounded-md border border-gray-300 bg-white text-gray-900 mt-2 p-2 shadow focus:ring-2 focus:ring-pink-500 focus:border-pink-500"
             [ngClass]="{'border-red-500': isInvalid('partnerDob')}" />
           <p *ngIf="isInvalid('partnerDob')" class="text-sm text-red-500">Partner's DOB is required</p>
         </div>
@@ -78,9 +75,10 @@
 
       <!-- Love Start Date -->
       <div>
-        <label for="loveStartDate" class="block text-sm font-medium text-pink-600">💖 The Day Our Love Story Began</label>
+        <label for="loveStartDate" class="block text-sm font-medium text-pink-600">💖 The Day Our Love Story
+          Began</label>
         <input id="loveStartDate" [max]="yesterday" type="date" formControlName="loveStartDate"
-          class="w-full rounded-md border-gray-300 mt-2 p-2 shadow-sm focus:ring-pink-500 focus:border-pink-500"
+          class="w-full rounded-md border border-gray-300 bg-white text-gray-900 mt-2 p-2 shadow focus:ring-2 focus:ring-pink-500 focus:border-pink-500"
           [ngClass]="{'border-red-500': isInvalid('loveStartDate')}" />
         <p *ngIf="isInvalid('loveStartDate')" class="text-sm text-red-500">Please select this special date</p>
       </div>
@@ -89,7 +87,7 @@
       <div>
         <label for="email" class="block text-sm font-medium">Email</label>
         <input id="email" type="email" formControlName="email"
-          class="w-full rounded-md border-gray-300 mt-2 p-2 shadow-sm focus:ring-pink-500 focus:border-pink-500"
+          class="w-full rounded-md border border-gray-300 bg-white text-gray-900 mt-2 p-2 shadow focus:ring-2 focus:ring-pink-500 focus:border-pink-500"
           [ngClass]="{'border-red-500': isInvalid('email')}" />
         <p *ngIf="isInvalid('email')" class="text-sm text-red-500">Valid email is required</p>
       </div>
@@ -98,7 +96,7 @@
       <div>
         <label for="password" class="block text-sm font-medium">Password</label>
         <input id="password" type="password" formControlName="password"
-          class="w-full rounded-md border-gray-300 mt-2 p-2 shadow-sm focus:ring-pink-500 focus:border-pink-500"
+          class="w-full rounded-md border border-gray-300 bg-white text-gray-900 mt-2 p-2 shadow focus:ring-2 focus:ring-pink-500 focus:border-pink-500"
           [ngClass]="{'border-red-500': isInvalid('password')}" />
         <p *ngIf="isInvalid('password')" class="text-sm text-red-500">Minimum 6 characters required</p>
       </div>
@@ -109,8 +107,8 @@
         [disabled]="btnHitter">
         <ng-container *ngIf="!btnHitter; else loadingTemplate">Register</ng-container>
         <ng-template #loadingTemplate>
-            <span class="animate-spin border-2 border-white border-t-transparent rounded-full w-4 h-4"></span>
-    Registering...
+          <span class="animate-spin border-2 border-white border-t-transparent rounded-full w-4 h-4"></span>
+          Registering...
         </ng-template>
       </button>
     </form>

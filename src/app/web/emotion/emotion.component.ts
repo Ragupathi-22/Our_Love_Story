@@ -25,7 +25,7 @@ export class EmotionComponent implements OnInit {
     { emoji: '😊', label: 'Happy' },
     { emoji: '🥺', label: 'Sad' },
     { emoji: '😠', label: 'Angry' },
-    { emoji: '😩', label: 'Overwhelmed' },
+    { emoji: '😩', label: 'Exhausted' },
   ];
 
   // === UI Control ===
@@ -304,17 +304,33 @@ export class EmotionComponent implements OnInit {
   }
 
   // === Emotion Sorting (History Tab) ===
+  // getSortedEmotions(): EmotionEntry[] {
+  //   const current = this.profile();
+  //   if (!current) return [];
+
+  //   const oneMonthAgo = new Date();
+  //   oneMonthAgo.setMonth(oneMonthAgo.getMonth() - 1);
+
+  //   return [...current.emotions]
+  //     .filter((e) => new Date(e.date) >= oneMonthAgo)
+  //     .sort((a, b) => new Date(b.date).getTime() - new Date(a.date).getTime());
+  // }
+
   getSortedEmotions(): EmotionEntry[] {
-    const current = this.profile();
-    if (!current) return [];
+  const current = this.profile();
+  if (!current) return [];
 
-    const oneMonthAgo = new Date();
-    oneMonthAgo.setMonth(oneMonthAgo.getMonth() - 1);
+  const now = new Date();
+  const startOfMonth = new Date(now.getFullYear(), now.getMonth(), 1);
+  const endOfMonth = new Date(now.getFullYear(), now.getMonth() + 1, 0, 23, 59, 59);
 
-    return [...current.emotions]
-      .filter((e) => new Date(e.date) >= oneMonthAgo)
-      .sort((a, b) => new Date(b.date).getTime() - new Date(a.date).getTime());
-  }
+  return [...current.emotions]
+    .filter((e) => {
+      const date = new Date(e.date);
+      return date >= startOfMonth && date <= endOfMonth;
+    })
+    .sort((a, b) => new Date(b.date).getTime() - new Date(a.date).getTime());
+}
 
   // === Monthly Summary ===
   getMonthlyCounts(profile: EmotionProfile | null) {

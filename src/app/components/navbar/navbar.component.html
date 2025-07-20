@@ -27,7 +27,7 @@
       </a>
     </div>
 
- <div class="flex">
+ <div class="flex space-x-4">
     <!-- Mobile Toggle Button -->
     <div class="md:hidden mobile-toggle-btn">
       <button class="text-pink-600" (click)="toggleMenu()">
@@ -35,27 +35,37 @@
         <span *ngIf="isOpen">&times;</span> <!-- XIcon -->
       </button>
     </div>
+    <!-- Settings Button & Popup -->
+<div class="relative settings-dropdown">
+  <button (click)="toggleSettings()" class="transition hover:scale-110">
+    <lucide-icon [name]="settings" class="text-pink-600 w-6 h-6"></lucide-icon>
+  </button>
+
+  <!-- Animated Styled Popup -->
+  <div *ngIf="showSettings"
+    class="absolute right-0 mt-3 w-52 bg-white border rounded-xl shadow-2xl z-50 overflow-hidden animate-fade-in transition-all duration-300">
+    
+    <!-- Admin -->
+    <button (click)="goToAdmin()"
+      class="w-full flex items-center gap-3 px-4 py-3 text-sm text-gray-700 hover:bg-pink-100 hover:text-pink-600 transition">
+    <lucide-icon class="w-5 h-5" [name]="AppWindowMacIcon" />
+      <span>Go to Admin</span>
+    </button>
+
+    <!-- Logout -->
+    <button (click)="logout()"
+      class="w-full flex items-center gap-3 px-4 py-3 text-sm text-gray-700 hover:bg-pink-100 hover:text-pink-600 transition">
+    <lucide-icon class="w-5 h-5" [name]="LogOutIcon" />
+     
+      <span>Logout</span>
+    </button>
+  </div>
+</div>
+
   </div>
 
-       <!-- Settings Button & Popup -->
-    <div class="relative settings-dropdown">
-      <button (click)="toggleSettings()" class="transition hover:scale-105">
-        <lucide-icon [name]="settings"></lucide-icon>
-      </button>
 
-      <!-- setting Styled Popup -->
-      <div *ngIf="showSettings"
-        class="absolute right-0 mt-2 w-44 bg-white border rounded-xl shadow-2xl z-50 overflow-hidden animate-fade-in transition-all duration-300">
-        <button (click)="goToAdmin()"
-          class="w-full text-left px-4 py-3 text-sm text-gray-700 hover:bg-pink-100 hover:text-pink-600 transition">
-          💼 Go to Admin
-        </button>
-        <button (click)="logout()"
-          class="w-full text-left px-4 py-3 text-sm text-gray-700 hover:bg-pink-100 hover:text-pink-600 transition">
-          🚪 Logout
-        </button>
-      </div>
-    </div>
+
 </div>
   <!-- Mobile Menu -->
   <!-- Mobile Menu -->

@@ -3,7 +3,7 @@ import { RouterModule, Router } from '@angular/router';
 import { CommonModule } from '@angular/common';
 import { Subscription } from 'rxjs';
 import { UserService } from '../../services/userService/user.service';
-import { LucideAngularModule, Settings } from 'lucide-angular';
+import { LucideAngularModule, Settings,AppWindowMacIcon,LogOutIcon } from 'lucide-angular';
 @Component({
   selector: 'app-navbar',
   standalone: true,
@@ -17,6 +17,8 @@ export class NavbarComponent implements OnInit, OnDestroy {
   swappedText = '💞';
   isFading = false;
   settings: any = Settings;
+  AppWindowMacIcon=AppWindowMacIcon;
+  LogOutIcon=LogOutIcon;
   private intervalId: any;
   private toggle = true;
   private nameSwap1 = 'R';
