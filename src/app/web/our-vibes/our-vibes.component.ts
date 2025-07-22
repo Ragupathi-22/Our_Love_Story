@@ -6,16 +6,17 @@ import { PlaylistItem } from '../../models/user-profile.model';
 import { LoadingService } from '../../components/loading/loading.service';
 import { AnimatedSectionComponent } from '../../components/AnimatedSection';
 import { map } from 'rxjs/operators';
+import { LucideAngularModule,Youtube ,VideoIcon} from 'lucide-angular';
 
 @Component({
   selector: 'app-ourvibes',
   standalone: true,
-  imports: [CommonModule, AnimatedSectionComponent],
+  imports: [CommonModule, AnimatedSectionComponent,LucideAngularModule],
   templateUrl: './our-vibes.component.html'
 })
 export class OurVibesComponent implements OnInit {
   safePlaylistUrls: { item: PlaylistItem; safeUrl: SafeResourceUrl }[] = [];
-
+  Youtube =VideoIcon;
   constructor(
     private userService: UserService,
     private sanitizer: DomSanitizer,

@@ -46,7 +46,7 @@
         </div>
 
         <!-- Emoji Selector -->
-        <div class="grid grid-cols-5 gap-4 mb-6">
+        <div class="grid grid-cols-3 gap-4 mb-6">
           <div *ngFor="let emoji of emojis" (click)="selectEmoji(emoji)"
             class="cursor-pointer rounded-xl text-center p-3 transition border-2" [ngClass]="{
          'bg-pink-50 border-pink-400': emoji.label === 'Love',
@@ -97,7 +97,7 @@
             <div class="flex items-center gap-3">
               <span class="text-2xl">{{ e.emoji }}</span>
               <div>
-                <div class="font-semibold text-pink-700">{{ e.label }} - {{ e.date }}</div>
+                <div class="font-semibold text-pink-700">{{ e.label }} - {{ e.date | date: 'MMM d, y' }}</div>
                 <div class="text-gray-600 text-sm">{{ e.note }}</div>
               </div>
             </div>

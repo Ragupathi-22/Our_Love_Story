@@ -27,18 +27,27 @@
       <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
         <div>
           <label class="block text-sm font-medium mb-1">Playlist Name *</label>
-          <input type="text" formControlName="playlistName" class="w-full border border-pink-300 rounded p-2" placeholder="Chill Vibes" />
+          <input type="text" formControlName="playlistName" class="w-full border border-pink-300 rounded p-2"
+            placeholder="Chill Vibes" />
         </div>
         <div>
           <label class="block text-sm font-medium mb-1">Playlist URL *</label>
-          <input type="url" formControlName="playlistUrl" class="w-full border border-pink-300 rounded p-2" placeholder="https://www.youtube.com/playlist?list=..." />
+          <input type="url" formControlName="playlistUrl" class="w-full border border-pink-300 rounded p-2"
+            placeholder="https://www.youtube.com/playlist?list=..." />
         </div>
       </div>
       <div class="flex gap-3">
-        <button type="submit" class="bg-gradient-to-r from-pink-500 to-purple-600 hover:from-pink-600 hover:to-purple-700 text-white px-4 py-2 rounded">
-          {{ editingId ? 'Update' : 'Add' }} Playlist
+        <button type="submit" [disabled]="isLoading"
+          class="flex items-center justify-center gap-2 bg-gradient-to-r from-pink-500 to-purple-600 hover:from-pink-600 hover:to-purple-700 text-white px-4 py-2 rounded disabled:opacity-70 disabled:cursor-not-allowed">
+
+          <div *ngIf="isLoading" class="h-4 w-4 border-2 border-white border-t-transparent rounded-full animate-spin">
+          </div>
+          <span>{{ isLoading ? (editingId ? 'Updating...' : 'Adding...') : (editingId ? 'Update' : 'Add') }}
+            Playlist</span>
         </button>
-        <button *ngIf="editingId" type="button" (click)="resetForm()" class="px-4 py-2 rounded border border-gray-300 text-gray-600 hover:bg-pink-50">
+
+        <button *ngIf="editingId" type="button" (click)="resetForm()"
+          class="px-4 py-2 rounded border border-gray-300 text-gray-600 hover:bg-pink-50">
           Cancel
         </button>
       </div>
@@ -57,18 +66,29 @@
       <div *ngFor="let playlist of playlists" class="bg-white/80 border border-pink-200 rounded-lg shadow-md p-4">
         <h3 class="font-semibold text-lg text-gray-800 mb-2">{{ playlist.playlistName }}</h3>
         <div class="aspect-video mb-3 rounded overflow-hidden">
-          <iframe
-            class="w-full h-full"
-            [src]="getSafeUrl(playlist.playlistUrl)"
-            frameborder="0"
+          <iframe class="w-full h-full" [src]="getSafeUrl(playlist.playlistUrl)" frameborder="0"
             allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
             allowfullscreen>
           </iframe>
         </div>
         <p class="text-sm text-gray-600 truncate mb-2">{{ playlist.playlistUrl }}</p>
         <div class="flex space-x-2">
-          <button (click)="edit(playlist)" class="flex-1 py-1 text-sm text-pink-600 border border-pink-300 rounded hover:bg-pink-50">Edit</button>
-          <button (click)="delete(playlist.id)" class="flex-1 py-1 text-sm text-red-600 border border-red-300 rounded hover:bg-red-50">Delete</button>
+          <button [disabled]="isLoading" (click)="edit(playlist)"
+            class="flex-1 py-1 text-sm text-pink-600 border border-pink-300 rounded hover:bg-pink-50 flex items-center justify-center gap-2">
+            <span *ngIf="!isLoading">Edit</span>
+            <span *ngIf="isLoading" class="flex items-center gap-1">
+              <div class="h-4 w-4 border-2 border-pink-400 border-t-transparent rounded-full animate-spin"></div>
+              <span>Loading...</span>
+            </span>
+          </button>
+          <button [disabled]="isLoading" (click)="delete(playlist.id)"
+            class="flex-1 py-1 text-sm text-pink-600 border border-pink-300 rounded hover:bg-pink-50 flex items-center justify-center gap-2">
+            <span *ngIf="!isLoading">Delete</span>
+            <span *ngIf="isLoading" class="flex items-center gap-1">
+              <div class="h-4 w-4 border-2 border-pink-400 border-t-transparent rounded-full animate-spin"></div>
+              <span>Loading...</span>
+            </span>
+          </button>
         </div>
       </div>
     </div>

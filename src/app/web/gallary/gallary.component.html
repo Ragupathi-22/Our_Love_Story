@@ -3,33 +3,21 @@
   <!-- Monthly Memories Section -->
   <div class="mb-5 mt-5 text-center">
     <h2 class="text-2xl font-bold text-center text-pink-600 mb-6">
-     Moments ❤️ {{ now | date: 'MMMM' }} 
+      Moments ❤️ {{ now | date: 'MMMM' }}
     </h2>
 
     <!-- ngIf for memory list -->
     <ng-container *ngIf="currentMonthItems$ | async as currentMonthItems">
-      
+
       <!-- Show if list has memory -->
       <ng-container *ngIf="currentMonthItems.length > 0; else noMemoriesFound">
 
         <!-- Mobile View -->
-        <div
-          class="flex overflow-x-auto space-x-6 px-2 py-4 md:hidden"
-          style="scrollbar-color: #f472b6 transparent; scrollbar-width: thin;"
-        >
-          <div
-            *ngFor="let item of currentMonthItems"
-            class="flex-shrink-0 w-40 text-center"
-          >
-            <div
-              class="relative w-40 h-40 rounded-full overflow-hidden border-4 border-pink-300 shadow-lg"
-            >
-              <img
-                [src]="item.photoUrl"
-                [alt]="item.title"
-                class="w-full h-full object-cover"
-                loading="lazy"
-              />
+        <div class="flex overflow-x-auto space-x-6 px-2 py-4 md:hidden"
+          style="scrollbar-color: #f472b6 transparent; scrollbar-width: thin;">
+          <div *ngFor="let item of currentMonthItems" class="flex-shrink-0 w-40 text-center">
+            <div class="relative w-40 h-40 rounded-full overflow-hidden border-4 border-pink-300 shadow-lg">
+              <img [src]="item.photoUrl" [alt]="item.title" class="w-full h-full object-cover" loading="lazy" />
             </div>
             <p class="mt-3 text-sm font-semibold text-gray-800 truncate">
               {{ item.title }}
@@ -44,15 +32,10 @@
         <div class="hidden md:block overflow-x-auto pb-4">
           <div class="flex gap-4 min-w-max px-2">
             <div *ngFor="let item of currentMonthItems" class="w-72 flex-shrink-0">
-              <div
-                class="bg-white rounded-lg overflow-hidden shadow-md hover:shadow-lg transition-all h-full"
-              >
+              <div class="bg-white rounded-lg overflow-hidden shadow-md hover:shadow-lg transition-all h-full">
                 <div class="h-40 overflow-hidden">
-                  <img
-                    [src]="item.photoUrl"
-                    [alt]="item.title"
-                    class="w-full h-full object-contain transition-transform hover:scale-105"
-                  />
+                  <img [src]="item.photoUrl" [alt]="item.title"
+                    class="w-full h-full object-contain transition-transform hover:scale-105" />
                 </div>
                 <div class="p-4">
                   <div class="flex justify-between items-start">
@@ -69,7 +52,7 @@
             </div>
           </div>
         </div>
-        
+
       </ng-container>
     </ng-container>
 
@@ -79,81 +62,70 @@
     </ng-template>
   </div>
 
-    <!-- Rest of your Gallery section below remains unchanged -->
-    <app-animated-section class="text-center mb-16">
-      <h1 class="text-4xl md:text-5xl font-bold mb-4">Our Moments</h1>
-      <p class="text-gray-600 max-w-2xl mx-auto">
-         A collection of our favorite memories together, captured in photographs.
-      </p>
-    </app-animated-section>
+  <!-- Rest of your Gallery section below remains unchanged -->
+  <app-animated-section class="text-center mb-16">
+    <h1 class="text-4xl md:text-5xl font-bold mb-4">Our Moments</h1>
+    <p class="text-gray-600 max-w-2xl mx-auto">
+      A collection of our favorite memories together, captured in photographs.
+    </p>
+  </app-animated-section>
 
 
   <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-8 mt-5">
     <ng-container *ngIf="gallery$ | async as gallery">
       <ng-container *ngIf="gallery.length > 0; else noGalleryFound">
-      <div
-        class="group relative overflow-hidden rounded-lg shadow-lg bg-white"
-        *ngFor="let photo of gallery"
-      >
-        <!-- Image -->
-        <div
-          class="overflow-hidden cursor-pointer"
-          (click)="openImageModal(photo.photoUrl)"
-        >
-          <img
-            [src]="photo.photoUrl"
-            [alt]="photo.title"
-            class="w-full h-80 object-cover transition-all duration-500 
-              group-hover:scale-110 md:group-hover:filter-none md:filter md:grayscale"
-          />
-        </div>
-
-        <!-- Caption for Mobile: shown always below the image -->
-        <div class="block md:hidden p-3 text-center">
-          <p class="text-base font-dancing text-pink-600 font-semibold">
-            {{ photo.title }}
-          </p>
-        </div>
-
-        <!-- Caption for Desktop: shown on hover overlay -->
-        <div
-          class="hidden md:flex absolute inset-0 items-center justify-center 
-          opacity-0 group-hover:opacity-100 transition-opacity duration-300 bg-black/30"
-        >
-          <div class="transform translate-y-4 group-hover:translate-y-0 transition-transform duration-300">
-            <div class="bg-white/80 backdrop-blur-sm p-3 rounded-lg">
-              <p class="text-lg font-dancing font-bold text-center">
-                {{ photo.title }}
-              </p>
+        <div class="group relative overflow-hidden rounded-lg shadow-lg bg-white" *ngFor="let photo of gallery">
+          <!-- Image -->
+          <div class="relative overflow-hidden cursor-pointer" (click)="openImageModal(photo.photoUrl)">
+            <img [src]="photo.photoUrl" [alt]="photo.title" class="w-full h-80 object-cover transition-all duration-500 
+                       group-hover:scale-110 md:group-hover:filter-none md:filter md:grayscale" />
+            <div class="absolute bottom-2 left-2 bg-black bg-opacity-50 text-white text-xs px-2 py-1 rounded">
+              {{ photo.date| date: 'MMM d, y'}}
             </div>
           </div>
-        </div>
 
-        <!-- Download Button -->
-        <div class="absolute bottom-4 right-4">
-          <button
-            class="bg-white/80 backdrop-blur-sm p-2 rounded-full shadow-lg 
+
+          <!-- Caption for Mobile: shown always below the image -->
+          <div class="block md:hidden p-3 text-center">
+            <p class="text-base font-dancing text-pink-600 font-semibold">
+              {{ photo.title }}
+            </p>
+          </div>
+
+          <!-- Caption for Desktop: shown on hover overlay
+          <div class="hidden md:flex absolute inset-0 items-center justify-center 
+          opacity-0 group-hover:opacity-100 transition-opacity duration-300 bg-black/30">
+            <div class="transform translate-y-4 group-hover:translate-y-0 transition-transform duration-300">
+              <div class="bg-white/80 backdrop-blur-sm p-3 rounded-lg">
+                <p class="text-lg font-dancing font-bold text-center">
+                  {{ photo.title }}
+                </p>
+              </div>
+            </div>
+          </div> -->
+          <!-- Caption for Desktop: bottom hover overlay -->
+          <div class="hidden md:block absolute bottom-0 left-0 right-0 bg-black/50 text-white text-sm text-center py-2 
+                      opacity-0 group-hover:opacity-100 transition-opacity duration-300">
+            {{ photo.title }}
+          </div>
+
+          <!-- Download Button -->
+          <div class="absolute bottom-4 right-4">
+            <button class="bg-white/80 backdrop-blur-sm p-2 rounded-full shadow-lg 
               opacity-100 md:opacity-0 md:group-hover:opacity-100 
               transition-all duration-300 hover:scale-110"
-            (click)="downloadImage(photo.photoUrl); $event.stopPropagation()"
-          >
-            <svg
-              xmlns="http://www.w3.org/2000/svg"
-              class="h-5 w-5 text-pink-600"
-              viewBox="0 0 20 20"
-              fill="currentColor"
-            >
-              <path
-                fill-rule="evenodd"
-                d="M3 17a1 1 0 011-1h12a1 1 0 110 2H4a1 1 0 01-1-1zm3.293-7.707a1 1 0 011.414 0L9 10.586V3a1 1 0 112 0v7.586l1.293-1.293a1 1 0 111.414 1.414l-3 3a1 1 0 01-1.414 0l-3-3a1 1 0 010-1.414z"
-                clip-rule="evenodd"
-              />
-            </svg>
-          </button>
+              (click)="downloadImage(photo.photoUrl); $event.stopPropagation()">
+              <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 text-pink-600" viewBox="0 0 20 20"
+                fill="currentColor">
+                <path fill-rule="evenodd"
+                  d="M3 17a1 1 0 011-1h12a1 1 0 110 2H4a1 1 0 01-1-1zm3.293-7.707a1 1 0 011.414 0L9 10.586V3a1 1 0 112 0v7.586l1.293-1.293a1 1 0 111.414 1.414l-3 3a1 1 0 01-1.414 0l-3-3a1 1 0 010-1.414z"
+                  clip-rule="evenodd" />
+              </svg>
+            </button>
+          </div>
         </div>
-      </div>
+      </ng-container>
     </ng-container>
-     </ng-container>
 
     <!-- Fallback Template -->
     <ng-template #noGalleryFound>
@@ -161,22 +133,14 @@
     </ng-template>
   </div>
 
- <!-- Modal -->
-<div
-  *ngIf="selectedImage"
-  class="fixed inset-0 bg-black bg-opacity-80 flex items-center justify-center z-50"
-  (click)="closeModal()"
->
-  <img
-    [src]="selectedImage"
-    class="max-h-[90vh] max-w-[90vw] rounded shadow-xl"
-    (click)="$event.stopPropagation()" />
-  <button
-    class="absolute top-4 right-4 text-white text-2xl font-bold"
-    (click)="closeModal(); $event.stopPropagation()"
-  >
-    ✕
-  </button>
-</div>
+  <!-- Modal -->
+  <div *ngIf="selectedImage" class="fixed inset-0 bg-black bg-opacity-80 flex items-center justify-center z-50"
+    (click)="closeModal()">
+    <img [src]="selectedImage" class="max-h-[90vh] max-w-[90vw] rounded shadow-xl" (click)="$event.stopPropagation()" />
+    <button class="absolute top-4 right-4 text-white text-2xl font-bold"
+      (click)="closeModal(); $event.stopPropagation()">
+      ✕
+    </button>
+  </div>
 
 </div>

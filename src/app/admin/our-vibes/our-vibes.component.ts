@@ -57,7 +57,10 @@ export class OurVibesComponent implements OnInit {
   }
 
   handleSubmit(): void {
-    if (this.form.invalid) return;
+    if (this.form.invalid) {
+      this.toastr.error('Please fill the name and playlist url;');
+      return;
+    };
 
     const uid = this.userService.getCurrentUserId();
     if (!uid) return;
