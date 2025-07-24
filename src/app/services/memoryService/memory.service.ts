@@ -1,9 +1,13 @@
 import { Injectable } from '@angular/core';
-import { Firestore, doc, getDoc, updateDoc } from '@angular/fire/firestore';
-import { Observable, map, of } from 'rxjs';
-import { BucketItem, PeriodItem, ReminderItem, UserProfile } from '../../models/user-profile.model';
+import {
+  Firestore, collection, collectionData, addDoc, deleteDoc,
+  doc, docData, updateDoc, getDocs, query, orderBy, where
+} from '@angular/fire/firestore';
+import { Observable, of } from 'rxjs';
+import { BucketItem, PeriodItem, ReminderItem } from '../../models/user-profile.model';
 import { UserService } from '../userService/user.service';
 import { LoadingService } from '../../components/loading/loading.service';
+import { tap } from 'rxjs/operators';
 
 @Injectable({
   providedIn: 'root'
@@ -15,140 +19,114 @@ export class MemoryService {
     private loadingService: LoadingService
   ) {}
 
-  // ✅ Reminder Methods
+  private getUid(): string | null {
+    return this.userService.getCurrentUserId();
+  }
+
+  private getCollectionPath(type: 'reminders' | 'periods' | 'bucketList') {
+    const uid = this.getUid();
+    return `users/${uid}/${type}`;
+  }
+
+  // ─── Reminders ──────────────────────────────────────────────────────
+
   getReminders(): Observable<ReminderItem[]> {
-    this.loadingService.show();
-    return this.userService.userProfile$.pipe(
-      map(profile => {
-        this.loadingService.hide();
-        return profile?.reminders ?? [];
-      })
-    );
+    const uid = this.getUid();
+    if (!uid) return of([]);
+
+  
+
+    const ref = collection(this.firestore, `users/${uid}/reminders`);
+    const q = query(ref, orderBy('date', 'desc'));
+
+    return collectionData(q, { idField: 'id' }).pipe(
+    ) as Observable<ReminderItem[]>;
   }
 
   async addReminder(reminder: ReminderItem): Promise<void> {
-    const uid = this.userService.getCurrentUserId();
+    const uid = this.getUid();
     if (!uid) return;
 
-    const userRef = doc(this.firestore, 'users', uid);
-    const snapshot = await getDoc(userRef);
-    if (snapshot.exists()) {
-      const data = snapshot.data() as UserProfile;
-      const updatedReminders = [...(data.reminders ?? []), reminder];
-      await updateDoc(userRef, { reminders: updatedReminders });
-      this.userService.loadUserProfile(uid);
-    }
+    const ref = collection(this.firestore, `users/${uid}/reminders`);
+    await addDoc(ref, reminder);
   }
 
-  async deleteReminder(reminderId: string): Promise<void> {
-    const uid = this.userService.getCurrentUserId();
+  async deleteReminder(id: string): Promise<void> {
+    const uid = this.getUid();
     if (!uid) return;
 
-    const userRef = doc(this.firestore, 'users', uid);
-    const snapshot = await getDoc(userRef);
-    if (snapshot.exists()) {
-      const data = snapshot.data() as UserProfile;
-      const updatedReminders = (data.reminders ?? []).filter(r => r.id !== reminderId);
-      await updateDoc(userRef, { reminders: updatedReminders });
-      this.userService.loadUserProfile(uid);
-    }
+    const ref = doc(this.firestore, `users/${uid}/reminders/${id}`);
+    await deleteDoc(ref);
   }
 
-  // ✅ Period Methods
+  // ─── Periods ──────────────────────────────────────────────────────
+
   getPeriods(): Observable<PeriodItem[]> {
-    this.loadingService.show();
-    return this.userService.userProfile$.pipe(
-      map(profile => {
-        this.loadingService.hide();
-        return profile?.periods ?? [];
-      })
-    );
+    const uid = this.getUid();
+    if (!uid) return of([]);
+
+  
+
+    const ref = collection(this.firestore, `users/${uid}/periods`);
+    const q = query(ref, orderBy('startDate', 'desc'));
+
+    return collectionData(q, { idField: 'id' }).pipe(
+    ) as Observable<PeriodItem[]>;
   }
 
   async addPeriod(period: PeriodItem): Promise<void> {
-    const uid = this.userService.getCurrentUserId();
+    const uid = this.getUid();
     if (!uid) return;
 
-    const userRef = doc(this.firestore, 'users', uid);
-    const snapshot = await getDoc(userRef);
-    if (snapshot.exists()) {
-      const data = snapshot.data() as UserProfile;
-      const updatedPeriods = [...(data.periods ?? []), period];
-      await updateDoc(userRef, { periods: updatedPeriods });
-      this.userService.loadUserProfile(uid);
-    }
+    const ref = collection(this.firestore, `users/${uid}/periods`);
+    await addDoc(ref, period);
   }
 
-  async deletePeriod(periodId: string): Promise<void> {
-    const uid = this.userService.getCurrentUserId();
+  async deletePeriod(id: string): Promise<void> {
+    const uid = this.getUid();
     if (!uid) return;
+  
 
-    const userRef = doc(this.firestore, 'users', uid);
-    const snapshot = await getDoc(userRef);
-    if (snapshot.exists()) {
-      const data = snapshot.data() as UserProfile;
-      const updatedPeriods = (data.periods ?? []).filter(p => p.id !== periodId);
-      await updateDoc(userRef, { periods: updatedPeriods });
-      this.userService.loadUserProfile(uid);
-    }
+    const ref = doc(this.firestore, `users/${uid}/periods/${id}`);
+    await deleteDoc(ref);
   }
+
+  // ─── Bucket List ──────────────────────────────────────────────────────
+
+  getBucketList(): Observable<BucketItem[]> {
+    const uid = this.getUid();
+    if (!uid) return of([]);
 
   
-// Get Bucket List
-getBucketList(): Observable<BucketItem[]> {
-  this.loadingService.show();
-  return this.userService.userProfile$.pipe(
-    map(profile => {
-      this.loadingService.hide();
-      return profile?.bucketList ?? [];
-    })
-  );
-}
 
-// Add Bucket Item
-async addBucketItem(item: BucketItem): Promise<void> {
-  const uid = this.userService.getCurrentUserId();
-  if (!uid) return;
-  const userRef = doc(this.firestore, 'users', uid);
-  const snapshot = await getDoc(userRef);
+    const ref = collection(this.firestore, `users/${uid}/bucketList`);
+    const q = query(ref, orderBy('date', 'desc'));
 
-  if (snapshot.exists()) {
-    const data = snapshot.data() as UserProfile;
-    const updated = [...(data.bucketList ?? []), item];
-    await updateDoc(userRef, { bucketList: updated });
-    this.userService.loadUserProfile(uid);
+    return collectionData(q, { idField: 'id' }).pipe(
+    ) as Observable<BucketItem[]>;
   }
-}
 
-// Toggle Complete
-async toggleBucketItemCompletion(id: string, completed: boolean): Promise<void> {
-  const uid = this.userService.getCurrentUserId();
-  if (!uid) return;
-  const userRef = doc(this.firestore, 'users', uid);
-  const snapshot = await getDoc(userRef);
+  async addBucketItem(item: BucketItem): Promise<void> {
+    const uid = this.getUid();
+    if (!uid) return;
 
-  if (snapshot.exists()) {
-    const data = snapshot.data() as UserProfile;
-    const updated = (data.bucketList ?? []).map(item =>
-      item.id === id ? { ...item, completed } : item
-    );
-    await updateDoc(userRef, { bucketList: updated });
-    this.userService.loadUserProfile(uid);
+    const ref = collection(this.firestore, `users/${uid}/bucketList`);
+    await addDoc(ref, item);
   }
-}
 
-// Delete Bucket Item
-async deleteBucketItem(id: string): Promise<void> {
-  const uid = this.userService.getCurrentUserId();
-  if (!uid) return;
-  const userRef = doc(this.firestore, 'users', uid);
-  const snapshot = await getDoc(userRef);
+  async toggleBucketItemCompletion(id: string, completed: boolean): Promise<void> {
+    const uid = this.getUid();
+    if (!uid) return;
 
-  if (snapshot.exists()) {
-    const data = snapshot.data() as UserProfile;
-    const updated = (data.bucketList ?? []).filter(item => item.id !== id);
-    await updateDoc(userRef, { bucketList: updated });
-    this.userService.loadUserProfile(uid);
+    const ref = doc(this.firestore, `users/${uid}/bucketList/${id}`);
+    await updateDoc(ref, { completed });
   }
-}
+
+  async deleteBucketItem(id: string): Promise<void> {
+    const uid = this.getUid();
+    if (!uid) return;
+
+    const ref = doc(this.firestore, `users/${uid}/bucketList/${id}`);
+    await deleteDoc(ref);
+  }
 }

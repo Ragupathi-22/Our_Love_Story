@@ -1,7 +1,7 @@
 import { Injectable } from '@angular/core';
 import { Auth, authState, signOut, User } from '@angular/fire/auth';
-import { Firestore, doc, getDoc } from '@angular/fire/firestore';
-import { BehaviorSubject, from, map, Observable, of, switchMap } from 'rxjs';
+import { Firestore, collection, collectionData, doc, getDoc, getDocs } from '@angular/fire/firestore';
+import { BehaviorSubject, catchError, from, map, Observable, of, switchMap, tap } from 'rxjs';
 import {
   UserProfile,
   PlaylistItem,
@@ -11,7 +11,7 @@ import {
   PeriodItem
 } from '../../models/user-profile.model';
 import { LoadingService } from '../../components/loading/loading.service';
-import { updateDoc } from 'firebase/firestore';
+import { CollectionReference, orderBy, query, updateDoc } from 'firebase/firestore';
 @Injectable({
   providedIn: 'root'
 })
@@ -91,70 +91,101 @@ export class UserService {
     );
   }
 
-getTimeline(): Observable<TimelineItem[]> {
-  this.loadingService.show();
-  return this.userProfile$.pipe(
-    map(profile => {
-      this.loadingService.hide();
+  getTimeline(): Observable<TimelineItem[]> {
+    const uid = this.getUid();
+    if (!uid) {
+      return of([]);
+    }
 
-      const timeline = profile?.timeline ?? [];
+    const timelineRef = collection(
+      this.firestore,
+      `users/${uid}/timeline`
+    ) as CollectionReference<TimelineItem>;
 
-      // Sort by date descending (latest to oldest)
-      return timeline.sort((a, b) => {
-        const dateA = new Date(a.date).getTime();
-        const dateB = new Date(b.date).getTime();
-        return dateB - dateA;
-      });
-    })
-  );
-}
+    const sortedQuery = query(timelineRef, orderBy('date', 'desc'));
 
-
-  getGallery(): Observable<GalleryItem[]> {
     this.loadingService.show();
-    return this.userProfile$.pipe(
-      map(profile => {
+
+    return collectionData(sortedQuery, { idField: 'id' }).pipe(
+      tap(() => this.loadingService.hide()),
+      catchError((error) => {
+        console.error('Error fetching timeline:', error);
         this.loadingService.hide();
-        return profile?.gallery ?? [];
+        return of([]);
       })
     );
   }
 
-  getPlaylists(): Observable<PlaylistItem[]> {
+
+getGallery(): Observable<GalleryItem[]> {
+  this.loadingService.show();
+
+  return this.userProfile$.pipe(
+    switchMap(profile => {
+      if (!profile?.uid) {
+        this.loadingService.hide();
+        return of([]);
+      }
+
+      const galleryRef = collection(this.firestore, `users/${profile.uid}/gallery`);
+      return collectionData(galleryRef, { idField: 'id' }) as Observable<GalleryItem[]>;
+    }),
+    tap(() => this.loadingService.hide()),
+    catchError(error => {
+      console.error('Error loading gallery:', error);
+      this.loadingService.hide();
+      return of([]);
+    })
+  );
+}
+
+getPlaylists(): Observable<PlaylistItem[]> {
+  this.loadingService.show();
+
+  return this.userProfile$.pipe(
+    switchMap(profile => {
+      if (!profile?.uid) {
+        this.loadingService.hide();
+        return of([]);
+      }
+
+      const playlistsRef = collection(this.firestore, `users/${profile.uid}/playlists`);
+      return collectionData(playlistsRef, { idField: 'id' }) as Observable<PlaylistItem[]>;
+    }),
+    tap(() => this.loadingService.hide()),
+    catchError(error => {
+      console.error('Error loading playlists:', error);
+      this.loadingService.hide();
+      return of([]);
+    })
+  );
+}
+
+  getNoOfDays(): Observable<string> {
     this.loadingService.show();
     return this.userProfile$.pipe(
       map(profile => {
         this.loadingService.hide();
-        return profile?.playlists ?? [];
+        const loveStartDate = profile?.loveStartDate;
+        if (!loveStartDate) return '0';
+        const startDate = new Date(loveStartDate);
+        const today = new Date();
+        const diffTime = today.getTime() - startDate.getTime();
+        const days = Math.floor(diffTime / (1000 * 60 * 60 * 24)); // 🔁 FIXED here
+        return days.toString();
       })
     );
   }
-
-getNoOfDays(): Observable<string> {
-  this.loadingService.show();
-  return this.userProfile$.pipe(
-    map(profile => {
-      this.loadingService.hide();
-      const loveStartDate = profile?.loveStartDate;
-      if (!loveStartDate) return '0';
-      const startDate = new Date(loveStartDate);
-      const today = new Date();
-      const diffTime = today.getTime() - startDate.getTime();
-      const days = Math.floor(diffTime / (1000 * 60 * 60 * 24)); // 🔁 FIXED here
-      return days.toString();
-    })
-  );
-}
 
   async logout(): Promise<void> {
-  try {
-    await signOut(this.auth);
-    this.currentUserSubject.next(null);
-    this.userProfileSubject.next(null);
-  } catch (error) {
-    console.error('Logout failed:', error);
+    try {
+      await signOut(this.auth);
+      this.currentUserSubject.next(null);
+      this.userProfileSubject.next(null);
+    } catch (error) {
+      console.error('Logout failed:', error);
+    }
   }
-}
 
 
 }

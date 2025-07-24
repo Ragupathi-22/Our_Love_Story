@@ -1,5 +1,5 @@
 // memory-page.component.ts
-import { Component, computed, effect, inject, signal } from '@angular/core';
+import { Component, computed, effect, inject, OnInit, signal } from '@angular/core';
 import { v4 as uuidv4 } from 'uuid';
 import { ReminderItem, PeriodItem, BucketItem } from '../../models/user-profile.model';
 import { LucideAngularModule, X, HeartIcon, Bell, Calendar } from 'lucide-angular';
@@ -8,6 +8,8 @@ import { FormsModule } from '@angular/forms';
 import { ToastrService } from 'ngx-toastr';
 import { MemoryService } from '../../services/memoryService/memory.service';
 import { UserService } from '../../services/userService/user.service';
+import { LoadingService } from '../../components/loading/loading.service';
+import { combineLatest } from 'rxjs';
 
 @Component({
   selector: 'app-memory-page',
@@ -16,7 +18,7 @@ import { UserService } from '../../services/userService/user.service';
   styleUrls: ['./memory-page.component.css'],
   imports: [LucideAngularModule, CommonModule, FormsModule]
 })
-export class MemoryPageComponent {
+export class MemoryPageComponent implements OnInit {
   x = X;
   heart = HeartIcon;
   bell = Bell;
@@ -46,27 +48,40 @@ export class MemoryPageComponent {
   isLoading = signal(false);
 
 
-  constructor(private toastr: ToastrService) {
-    effect(() => {
-      this.userService.userProfile$.subscribe(profile => {
-        const sortedReminders = (profile?.reminders ?? []).sort(
-          (a, b) => new Date(b.date).getTime() - new Date(a.date).getTime()
-        );
-        const sortedPeriods = (profile?.periods ?? []).sort(
-          (a, b) => new Date(b.startDate).getTime() - new Date(a.startDate).getTime()
-        );
-        const sortedBucket = (profile?.bucketList ?? []).sort(
-          (a, b) => new Date(b.date).getTime() - new Date(a.date).getTime()
-        );
+constructor(private toastr: ToastrService,private loadingService:LoadingService) {
 
+}
 
-        this.bucketList.set(sortedBucket);
-        this.reminders.set(sortedReminders);
-        this.periods.set(sortedPeriods);
-      });
-    });
-  }
+ngOnInit(): void {
+  const uid = this.userService.getUid(); // or from a UID signal
+  if (!uid) return;
 
+  this.loadingService.show();
+
+  const reminders$ = this.memoryService.getReminders();
+  const periods$ = this.memoryService.getPeriods();
+  const bucketList$ = this.memoryService.getBucketList();
+
+  combineLatest([reminders$, periods$, bucketList$]).subscribe(
+    ([reminders, periods, bucket]) => {
+      this.reminders.set(
+        reminders.sort((a, b) => new Date(b.date).getTime() - new Date(a.date).getTime())
+      );
+      this.periods.set(
+        periods.sort((a, b) => new Date(b.startDate).getTime() - new Date(a.startDate).getTime())
+      );
+      this.bucketList.set(
+        bucket.sort((a, b) => new Date(b.date).getTime() - new Date(a.date).getTime())
+      );
+
+      this.loadingService.hide(); // ✅ Hide loading only once everything is fetched
+    },
+    (error) => {
+      console.error('Error loading data:', error);
+      this.loadingService.hide(); // Still hide if an error occurs
+    }
+  );
+}
 
   showToast(msg: string) {
     this.toastr.success(msg);

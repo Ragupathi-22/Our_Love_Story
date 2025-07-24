@@ -1,6 +1,14 @@
 // app/our-vibes/vibe.service.ts
 import { Injectable } from '@angular/core';
-import { Firestore, doc, getDoc, updateDoc } from '@angular/fire/firestore';
+import {
+  Firestore,
+  collection,
+  doc,
+  getDocs,
+  setDoc,
+  deleteDoc,
+  collectionData
+} from '@angular/fire/firestore';
 import { PlaylistItem } from '../../models/user-profile.model';
 import { v4 as uuidv4 } from 'uuid';
 
@@ -13,43 +21,29 @@ export class VibeService {
     playlist: PlaylistItem,
     editingId: string | null
   ): Promise<PlaylistItem[]> {
-    const userRef = doc(this.firestore, 'users', uid);
-    const snapshot = await getDoc(userRef);
-    const data = snapshot.data();
-    if (!data) return [];
+    const playlistsRef = collection(this.firestore, `users/${uid}/playlists`);
 
-    let playlistArray: PlaylistItem[] = [...(data['playlists'] || [])];
+    const id = editingId || uuidv4();
+    const playlistDocRef = doc(this.firestore, `users/${uid}/playlists/${id}`);
 
-    if (editingId) {
-      const index = playlistArray.findIndex(p => p.id === editingId);
-      if (index !== -1) {
-        playlistArray[index] = {
-          id: editingId,
-          playlistUrl: playlist.playlistUrl,
-          playlistName: playlist.playlistName
-        };
-      }
-    } else {
-      playlistArray.push({
-        id: uuidv4(),
-        playlistUrl: playlist.playlistUrl,
-        playlistName: playlist.playlistName
-      });
-    }
+    await setDoc(playlistDocRef, {
+      id,
+      playlistUrl: playlist.playlistUrl,
+      playlistName: playlist.playlistName
+    });
 
-    await updateDoc(userRef, { playlists: playlistArray });
-    return playlistArray;
+    return this.getPlaylists(uid);
   }
 
   async deletePlaylist(uid: string, id: string): Promise<PlaylistItem[]> {
-    const userRef = doc(this.firestore, 'users', uid);
-    const snapshot = await getDoc(userRef);
-    const data = snapshot.data();
-    if (!data) return [];
+    const playlistDocRef = doc(this.firestore, `users/${uid}/playlists/${id}`);
+    await deleteDoc(playlistDocRef);
+    return this.getPlaylists(uid);
+  }
 
-    const playlistArray: PlaylistItem[] = [...(data['playlists'] || [])];
-    const updated = playlistArray.filter(p => p.id !== id);
-    await updateDoc(userRef, { playlists: updated });
-    return updated;
+  async getPlaylists(uid: string): Promise<PlaylistItem[]> {
+    const playlistsRef = collection(this.firestore, `users/${uid}/playlists`);
+    const snapshot = await getDocs(playlistsRef);
+    return snapshot.docs.map(doc => doc.data() as PlaylistItem);
   }
 }

@@ -11,7 +11,8 @@ export class AuthService {
   login(email: string, password: string) {
     return signInWithEmailAndPassword(this.auth, email, password);
   }
-   forgotPassword(email: string) {
+  
+  forgotPassword(email: string) {
     return sendPasswordResetEmail(this.auth, email);
   }
   logout() {

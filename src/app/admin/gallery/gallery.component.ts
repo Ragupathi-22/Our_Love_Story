@@ -37,11 +37,17 @@ export class GalleryComponent implements OnInit {
     });
   }
 
-  ngOnInit(): void {
-     this.today = new Date().toISOString().split('T')[0];
-    this.userService.getGallery().subscribe(items => {
-      this.photos = items;
-    });
+  async ngOnInit(): Promise<void> {
+    this.today = new Date().toISOString().split('T')[0];
+
+    const uid = this.userService.getCurrentUserId();
+    if (!uid) return;
+
+    try {
+      this.photos = await this.galleryService.getGallery(uid);
+    } catch (error) {
+      console.error('Failed to load gallery items:', error);
+    }
   }
 
   onFileChange(event: Event) {
