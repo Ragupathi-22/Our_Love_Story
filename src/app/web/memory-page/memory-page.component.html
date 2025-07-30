@@ -131,7 +131,8 @@
             <div *ngFor="let p of periods()" class="h-8 bg-pink-400 mx-1 rounded relative"
               [style.width.px]="getPeriodWidth(p.startDate, p.endDate)">
               <div class="absolute -bottom-5 left-0 text-xs text-gray-500 whitespace-nowrap">
-                {{ formatDate(p.startDate).split(' ')[0] }}
+              {{ formatDate(p.startDate).split(' ')[0].split('-')[2] }}/{{ formatDate(p.startDate).split(' ')[0].split('-')[1] }}/{{ formatDate(p.startDate).split(' ')[0].split('-')[0].slice(2) }}
+
               </div>
             </div>
           </div>
