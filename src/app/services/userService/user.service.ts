@@ -117,6 +117,7 @@ export class UserService {
   }
 
 
+
 getGallery(): Observable<GalleryItem[]> {
   this.loadingService.show();
 
@@ -128,7 +129,9 @@ getGallery(): Observable<GalleryItem[]> {
       }
 
       const galleryRef = collection(this.firestore, `users/${profile.uid}/gallery`);
-      return collectionData(galleryRef, { idField: 'id' }) as Observable<GalleryItem[]>;
+      const galleryQuery = query(galleryRef, orderBy('date', 'desc'));
+
+      return collectionData(galleryQuery, { idField: 'id' }) as Observable<GalleryItem[]>;
     }),
     tap(() => this.loadingService.hide()),
     catchError(error => {
@@ -138,6 +141,7 @@ getGallery(): Observable<GalleryItem[]> {
     })
   );
 }
+
 
 getPlaylists(): Observable<PlaylistItem[]> {
   this.loadingService.show();
