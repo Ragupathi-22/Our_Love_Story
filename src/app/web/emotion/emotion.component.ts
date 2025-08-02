@@ -79,11 +79,18 @@ export class EmotionComponent implements OnInit {
     return selected >= current;
   }
 
-  goToPreviousMonth() {
-    const current = this.selectedMonth();
-    const newMonth = new Date(current.getFullYear(), current.getMonth() - 1, 1);
-    this.selectedMonth.set(newMonth);
-  }
+goToPreviousMonth() {
+  const current = this.selectedMonth();
+  const newMonth = new Date(current.getFullYear(), current.getMonth() - 1, 1);
+
+  const oneYearAgo = new Date();
+  oneYearAgo.setMonth(oneYearAgo.getMonth() - 11); // Includes this month as one
+
+  // Prevent going before 1 year ago
+  if (newMonth < new Date(oneYearAgo.getFullYear(), oneYearAgo.getMonth(), 1)) return;
+
+  this.selectedMonth.set(newMonth);
+}
 
   goToNextMonth() {
     const current = this.selectedMonth();
