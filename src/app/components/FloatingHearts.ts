@@ -57,7 +57,7 @@ interface Heart {
 })
 export class FloatingHeartsComponent implements OnInit {
   hearts: Heart[] = [];
-  count = 17;
+  count = 15;
 
   ngOnInit() {
     const newHearts: Heart[] = [];
