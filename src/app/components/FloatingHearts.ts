@@ -34,7 +34,7 @@ interface Heart {
   styles: [`
 @keyframes float-up {
   0% {
-    transform: translateY(100vh);
+    transform: translateY(130vh);
     opacity: 0.3;
   }
   10% {
@@ -57,7 +57,7 @@ interface Heart {
 })
 export class FloatingHeartsComponent implements OnInit {
   hearts: Heart[] = [];
-  count = 15;
+  count = 17;
 
   ngOnInit() {
     const newHearts: Heart[] = [];
