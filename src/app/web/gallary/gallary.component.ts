@@ -1,65 +1,77 @@
 import { Component } from '@angular/core';
 import { CommonModule } from '@angular/common';
-import { map, Observable } from 'rxjs';
 import { GalleryItem } from '../../models/user-profile.model';
 import { UserService } from '../../services/userService/user.service';
-import { Location } from '@angular/common';
-import { AnimatedSectionComponent } from "../../components/AnimatedSection";
+
+
 @Component({
   selector: 'app-gallery',
   standalone: true,
-  imports: [CommonModule, AnimatedSectionComponent],
+  imports: [CommonModule],
   templateUrl: './gallary.component.html',
 })
 export class GallaryComponent {
-  gallery$: Observable<GalleryItem[]>;
+  galleryItems: GalleryItem[] = [];
   selectedImage: string | null = null;
-  currentMonthItems$: Observable<GalleryItem[]>;
-  now :Date = new Date();
-  
-  constructor(private userService: UserService,private location: Location) {
-    this.gallery$ = this.userService.getGallery();
+  isLoading = false;
+  allLoaded = false;
+  currentMonthItems: GalleryItem[] = [];
+  now: Date = new Date();
 
-        this.currentMonthItems$ = this.gallery$.pipe(
-          map(items =>
-            items.filter(item => {    
-              const date = new Date(item.date);
-              const now = new Date();
-              return (
-                date.getMonth() === now.getMonth()
-              );
-            })
-          )
-        );
+  constructor(private userService: UserService) {
+    this.resetGallery();
+    this.loadCurrentMonthItems();
   }
 
+  async loadNextPage() {
+    if (this.isLoading || this.allLoaded) return;
+    this.isLoading = true;
 
-openImageModal(url: string) {
+    const newItems = await this.userService.getGalleryPage(20);
+
+    if (newItems.length === 0) {
+      this.allLoaded = true;
+    } else {
+      this.galleryItems = [...this.galleryItems, ...newItems];
+    }
+
+    this.isLoading = false;
+  }
+
+  resetGallery() {
+    this.userService.resetGalleryPagination();
+    this.galleryItems = [];
+    this.allLoaded = false;
+    this.loadNextPage();
+  }
+
+  async loadCurrentMonthItems() {
+    this.currentMonthItems = await this.userService.getCurrentMonthGallery();
+  }
+
+  openImageModal(url: string) {
     this.selectedImage = url;
-    // Push fake history state so back button can be used to close modal
-    this.location.go(this.location.path(), '', null); // push current path again
+    window.history.pushState({}, '', window.location.href);
     window.addEventListener('popstate', this.onPopState);
   }
 
   closeModal() {
     this.selectedImage = null;
     window.removeEventListener('popstate', this.onPopState);
-    this.location.back(); // remove the fake history state
+    history.back();
   }
 
   onPopState = () => {
-    // This gets triggered on back button
     if (this.selectedImage) {
       this.selectedImage = null;
       window.removeEventListener('popstate', this.onPopState);
     }
   };
 
-downloadImage(url: string) {
-  const a = document.createElement('a');
-  a.href = url;
-  a.download = 'downloaded-image';
-  a.click();
-}
-
+  downloadImage(url: string) {
+    const a = document.createElement('a');
+    a.href = url;
+    a.download = 'downloaded-image';
+    a.click();
+  }
 }

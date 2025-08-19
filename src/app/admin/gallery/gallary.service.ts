@@ -1,4 +1,3 @@
-import { Injectable } from '@angular/core';
 import {
   Firestore,
   doc,
@@ -8,23 +7,29 @@ import {
   updateDoc,
   deleteDoc,
   getDocs,
-  setDoc,
   query,
-  orderBy
+  orderBy,
+  CollectionReference,
+  DocumentData,
+  limit,
+  startAfter,
 } from '@angular/fire/firestore';
 import {
   Storage,
   ref,
   uploadBytes,
   getDownloadURL,
-  deleteObject
+  deleteObject,
 } from '@angular/fire/storage';
 import { v4 as uuidv4 } from 'uuid';
 import imageCompression from 'browser-image-compression';
 import { GalleryItem } from '../../models/user-profile.model';
+import { Injectable } from '@angular/core';
 
 @Injectable({ providedIn: 'root' })
 export class GalleryService {
+  private lastGalleryDoc: DocumentData | null = null;
+
   constructor(private firestore: Firestore, private storage: Storage) {}
 
   async uploadImage(uid: string, file: File): Promise<string> {
@@ -35,7 +40,7 @@ export class GalleryService {
         maxSizeMB: 5,
         maxWidthOrHeight: 1920,
         initialQuality: 0.9,
-        useWebWorker: true
+        useWebWorker: true,
       });
     }
 
@@ -53,7 +58,7 @@ export class GalleryService {
     photoUrl: string,
     editingId: string | null,
     previousPhotoUrl: string
-  ): Promise<GalleryItem[]> {
+  ): Promise<GalleryItem | null> {
     const galleryRef = collection(this.firestore, `users/${uid}/gallery`);
 
     if (editingId) {
@@ -68,23 +73,25 @@ export class GalleryService {
       await updateDoc(itemRef, {
         title: formData.title,
         date: formData.date,
-        photoUrl
+        photoUrl,
       });
+
+      return { id: editingId, ...formData, photoUrl } as GalleryItem;
     } else {
       const newItem: GalleryItem = {
         id: uuidv4(),
         title: formData.title,
         date: formData.date,
-        photoUrl
+        photoUrl,
       };
       const docRef = await addDoc(galleryRef, newItem);
       await updateDoc(docRef, { id: docRef.id }); // ensure `id` is set inside the document
-    }
 
-    return this.getGallery(uid);
+      return { ...newItem, id: docRef.id };
+    }
   }
 
-  async deleteGalleryItem(uid: string, id: string): Promise<GalleryItem[]> {
+  async deleteGalleryItem(uid: string, id: string): Promise<boolean> {
     const itemRef = doc(this.firestore, `users/${uid}/gallery/${id}`);
     const snapshot = await getDoc(itemRef);
     const item = snapshot.data() as GalleryItem | undefined;
@@ -94,21 +101,58 @@ export class GalleryService {
     }
 
     await deleteDoc(itemRef);
-    return this.getGallery(uid);
+    return true;
   }
 
-  async getGallery(uid: string): Promise<GalleryItem[]> {
-    const galleryRef = collection(this.firestore, `users/${uid}/gallery`);
-    const q = query(galleryRef, orderBy('date', 'desc'));
-    const snapshot = await getDocs(q);
-    return snapshot.docs.map(doc => doc.data() as GalleryItem);
+  async getGalleryPage(
+    uid: string,
+    pageSize: number = 20
+  ): Promise<GalleryItem[]> {
+    if (!uid) return [];
+
+    const galleryRef = collection(
+      this.firestore,
+      `users/${uid}/gallery`
+    ) as CollectionReference<GalleryItem>;
+
+    let q;
+    if (this.lastGalleryDoc) {
+      q = query(
+        galleryRef,
+        orderBy('date', 'desc'),
+        startAfter(this.lastGalleryDoc),
+        limit(pageSize)
+      );
+    } else {
+      q = query(galleryRef, orderBy('date', 'desc'), limit(pageSize));
+    }
+
+    try {
+      const snapshot = await getDocs(q);
+      const items: GalleryItem[] = [];
+      snapshot.forEach((doc) => {
+        items.push(doc.data() as GalleryItem);
+      });
+      this.lastGalleryDoc =
+        snapshot.docs[snapshot.docs.length - 1] || null;
+      return items;
+    } catch (error) {
+      console.error('Error fetching gallery page:', error);
+      return [];
+    }
+  }
+
+  resetGalleryPagination() {
+    this.lastGalleryDoc = null;
   }
 
   async deleteImageFromStorage(photoUrl: string): Promise<void> {
     try {
       const url = new URL(photoUrl);
       const path = decodeURIComponent(
-        url.pathname.replace(/^\/v0\/b\/[^/]+\/o\//, '').replace(/%2F/g, '/')
+        url.pathname
+          .replace(/^\/v0\/b\/[^/]+\/o\//, '')
+          .replace(/%2F/g, '/')
       );
       const fileRef = ref(this.storage, path);
       await deleteObject(fileRef);

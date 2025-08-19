@@ -44,7 +44,6 @@
           </ng-container>
           <ng-template #btnText> Add </ng-template>
         </button>
-
       </div>
 
       <!-- Section Toggle Buttons -->
@@ -72,7 +71,7 @@
               <p class="text-sm text-gray-500">{{ formatDate(r.date) }}</p>
             </div>
           </div>
-          <button (click)="deleteReminder(r.id)" class="text-gray-400 hover:text-red-500">
+          <button (click)="deleteReminder(r)" class="text-gray-400 hover:text-red-500">
             <lucide-icon [name]="x" class="h-4 w-4" />
           </button>
         </div>
@@ -81,6 +80,13 @@
         <p class="text-gray-500 text-center py-4">No matching event found.</p>
       </ng-template>
 
+      <!-- Load More Button -->
+      <div class="text-center mt-4">
+        <button (click)="loadNextRemindersPage()" [disabled]="isLoadingReminders() || allRemindersLoaded()"
+          class="px-6 py-2 bg-pink-500 text-white rounded-lg shadow hover:bg-pink-600 disabled:opacity-50">
+          {{ isLoadingReminders() ? 'Loading...' : (allRemindersLoaded() ? 'No more reminders' : 'Load More') }}
+        </button>
+      </div>
     </div>
 
     <!-- Period Tracker Tab -->
@@ -107,7 +113,6 @@
           </ng-container>
           <ng-template #btnText> Add </ng-template>
         </button>
-
       </div>
 
       <div *ngIf="nextPeriod" class="mb-6 p-4 bg-pink-50 rounded-lg border border-pink-100">
@@ -115,8 +120,7 @@
           <lucide-icon [name]="calendar" class="h-5 w-5 mr-2" />
           Next Period Prediction
         </h3>
-        <p class="mt-2 text-gray-700">Estimated start date: <span class="font-medium">{{ nextPeriod()?.startDate
-            }}</span></p>
+        <p class="mt-2 text-gray-700">Estimated start date: <span class="font-medium">{{ nextPeriod()?.startDate }}</span></p>
         <p class="text-gray-700">Estimated end date: <span class="font-medium">{{ nextPeriod()?.endDate }}</span></p>
         <p class="text-xs text-gray-500 mt-2">Based on a simple 28-day cycle estimation.</p>
       </div>
@@ -131,9 +135,7 @@
             <div *ngFor="let p of periods()" class="h-8 bg-pink-400 mx-1 rounded relative"
               [style.width.px]="getPeriodWidth(p.startDate, p.endDate)">
               <div class="absolute -bottom-5 left-0 text-xs text-gray-500 whitespace-nowrap">
-                <!-- {{ formatDate(p.startDate).split(' ')[0] }} -->
-                  {{ formatDate(p.startDate).slice(0, 6) + formatDate(p.startDate).slice(-2) }}
-
+                {{ formatDate(p.startDate).slice(0, 6) + formatDate(p.startDate).slice(-2) }}
               </div>
             </div>
           </div>
@@ -144,11 +146,9 @@
         </div>
       </div>
 
-
       <!-- Scrollable Period List -->
       <div *ngIf="periods().length > 0; else noPeriodsList" class="space-y-3 max-h-[360px] overflow-y-auto pr-2">
-        <div *ngFor="let p of periods()"
-          class="flex items-center justify-between bg-gray-50 p-3 rounded-lg hover:bg-gray-100 transition-colors">
+        <div *ngFor="let p of periods()" class="flex items-center justify-between bg-gray-50 p-3 rounded-lg hover:bg-gray-100 transition-colors">
           <div class="flex items-center">
             <lucide-icon [name]="heart" class="h-5 w-5 text-pink-500 mr-3" />
             <div>
@@ -156,7 +156,7 @@
               <p class="text-sm text-gray-500">{{ formatDate(p.startDate) }} - {{ formatDate(p.endDate) }}</p>
             </div>
           </div>
-          <button (click)="deletePeriod(p.id)" class="text-gray-400 hover:text-red-500">
+          <button (click)="deletePeriod(p)" class="text-gray-400 hover:text-red-500">
             <lucide-icon [name]="x" class="h-4 w-4" />
           </button>
         </div>
@@ -164,6 +164,14 @@
       <ng-template #noPeriodsList>
         <p class="text-gray-500 text-center py-4">No period dates yet. Add some!</p>
       </ng-template>
+
+      <!-- Load More Button -->
+      <div class="text-center mt-4">
+        <button (click)="loadNextPeriodsPage()" [disabled]="isLoadingPeriods() || allPeriodsLoaded()"
+          class="px-6 py-2 bg-pink-500 text-white rounded-lg shadow hover:bg-pink-600 disabled:opacity-50">
+          {{ isLoadingPeriods() ? 'Loading...' : (allPeriodsLoaded() ? 'No more periods' : 'Load More') }}
+        </button>
+      </div>
     </div>
 
     <!-- Bucket List  -->
@@ -187,8 +195,7 @@
 
       <!-- Bucket List Items -->
       <div *ngIf="bucketList().length > 0; else noBucket" class="space-y-3 max-h-[360px] overflow-y-auto pr-2">
-        <div *ngFor="let item of bucketList()"
-          class="flex items-center justify-between bg-gray-50 p-3 rounded-lg hover:bg-gray-100 transition-colors">
+        <div *ngFor="let item of bucketList()" class="flex items-center justify-between bg-gray-50 p-3 rounded-lg hover:bg-gray-100 transition-colors">
           <div class="flex items-center gap-3">
             <input type="checkbox" [checked]="item.completed" (change)="toggleBucketCompleted(item.id, !item.completed)"
               class="accent-pink-500 w-4 h-4" />
@@ -197,7 +204,7 @@
               <p class="text-sm text-gray-500">{{ formatDate(item.date) }}</p>
             </div>
           </div>
-          <button (click)="deleteBucketItem(item.id)" class="text-gray-400 hover:text-red-500">
+          <button (click)="deleteBucketItem(item)" class="text-gray-400 hover:text-red-500">
             <lucide-icon [name]="x" class="h-4 w-4" />
           </button>
         </div>
@@ -205,7 +212,14 @@
       <ng-template #noBucket>
         <p class="text-gray-500 text-center py-4">Nothing in your bucket list yet. Start dreaming 💕</p>
       </ng-template>
-    </div>
 
+      <!-- Load More Button -->
+      <div class="text-center mt-4">
+        <button (click)="loadNextBucketListPage()" [disabled]="isLoadingBucketList() || allBucketListLoaded()"
+          class="px-6 py-2 bg-pink-500 text-white rounded-lg shadow hover:bg-pink-600 disabled:opacity-50">
+          {{ isLoadingBucketList() ? 'Loading...' : (allBucketListLoaded() ? 'No more items' : 'Load More') }}
+        </button>
+      </div>
+    </div>
   </div>
 </div>

@@ -11,7 +11,7 @@ import {
   PeriodItem
 } from '../../models/user-profile.model';
 import { LoadingService } from '../../components/loading/loading.service';
-import { CollectionReference, orderBy, query, updateDoc } from 'firebase/firestore';
+import { CollectionReference, DocumentData, limit, orderBy, query, startAfter, updateDoc, where } from 'firebase/firestore';
 @Injectable({
   providedIn: 'root'
 })
@@ -24,6 +24,7 @@ export class UserService {
     private firestore: Firestore,
     private loadingService: LoadingService
   ) {
+
     authState(this.auth).subscribe(user => {
       this.currentUserSubject.next(user || null);
       if (user) {
@@ -91,57 +92,202 @@ export class UserService {
     );
   }
 
-  getTimeline(): Observable<TimelineItem[]> {
+  // getTimeline(): Observable<TimelineItem[]> {
+  //   const uid = this.getUid();
+  //   if (!uid) {
+  //     return of([]);
+  //   }
+
+  //   const timelineRef = collection(
+  //     this.firestore,
+  //     `users/${uid}/timeline`
+  //   ) as CollectionReference<TimelineItem>;
+
+  //   const sortedQuery = query(timelineRef, orderBy('date', 'desc'));
+
+  //   this.loadingService.show();
+
+  //   return collectionData(sortedQuery, { idField: 'id' }).pipe(
+  //     tap(() => this.loadingService.hide()),
+  //     catchError((error) => {
+  //       console.error('Error fetching timeline:', error);
+  //       this.loadingService.hide();
+  //       return of([]);
+  //     })
+  //   );
+  // }
+
+  private lastTimelineDoc: DocumentData | null = null;
+
+  async getTimelinePage(pageSize: number = 20): Promise<TimelineItem[]> {
     const uid = this.getUid();
-    if (!uid) {
-      return of([]);
+    if (!uid) return [];
+
+    const timelineRef = collection(this.firestore, `users/${uid}/timeline`);
+    
+    let q;
+    if (this.lastTimelineDoc) {
+      q = query(timelineRef, orderBy('date', 'desc'), startAfter(this.lastTimelineDoc), limit(pageSize));
+    } else {
+      q = query(timelineRef, orderBy('date', 'desc'), limit(pageSize));
     }
 
-    const timelineRef = collection(
-      this.firestore,
-      `users/${uid}/timeline`
-    ) as CollectionReference<TimelineItem>;
+    try {
+      this.loadingService.show();
+      const querySnapshot = await getDocs(q);
+      const items: TimelineItem[] = [];
+      querySnapshot.forEach(doc => {
+        const data = doc.data() as TimelineItem;
+        items.push({ ...data, id: doc.id });
+      });
 
-    const sortedQuery = query(timelineRef, orderBy('date', 'desc'));
+      this.lastTimelineDoc = querySnapshot.docs[querySnapshot.docs.length - 1] || null;
 
-    this.loadingService.show();
-
-    return collectionData(sortedQuery, { idField: 'id' }).pipe(
-      tap(() => this.loadingService.hide()),
-      catchError((error) => {
-        console.error('Error fetching timeline:', error);
-        this.loadingService.hide();
-        return of([]);
-      })
-    );
+      return items;
+    } catch (error) {
+      console.error('Error fetching timeline page:', error);
+      return [];
+    } finally {
+      this.loadingService.hide();
+    }
   }
 
+  // Reset pagination (e.g., when refresh)
+  resetTimelinePagination() {
+    this.lastTimelineDoc = null;
+  }
 
+  async getCurrentMonthTimeline(): Promise<TimelineItem[]> {
+  const uid = this.getUid();
+  if (!uid) return [];
 
-getGallery(): Observable<GalleryItem[]> {
-  this.loadingService.show();
+  const now = new Date();
+  const firstDay = new Date(now.getFullYear(), now.getMonth(), 1);
+  const lastDay = new Date(now.getFullYear(), now.getMonth() + 1, 0, 23, 59, 59);
 
-  return this.userProfile$.pipe(
-    switchMap(profile => {
-      if (!profile?.uid) {
-        this.loadingService.hide();
-        return of([]);
-      }
+  const timelineRef = collection(this.firestore, `users/${uid}/timeline`);
 
-      const galleryRef = collection(this.firestore, `users/${profile.uid}/gallery`);
-      const galleryQuery = query(galleryRef, orderBy('date', 'desc'));
-
-      return collectionData(galleryQuery, { idField: 'id' }) as Observable<GalleryItem[]>;
-    }),
-    tap(() => this.loadingService.hide()),
-    catchError(error => {
-      console.error('Error loading gallery:', error);
-      this.loadingService.hide();
-      return of([]);
-    })
+  // Query by date range for current month
+  const q = query(
+    timelineRef,
+    orderBy('date', 'desc'),
+    where('date', '>=', firstDay.toISOString()),
+    where('date', '<=', lastDay.toISOString())
   );
+
+  try {
+    this.loadingService.show();
+    const querySnapshot = await getDocs(q);
+    const items: TimelineItem[] = [];
+    querySnapshot.forEach(doc => {
+      const data = doc.data() as TimelineItem;
+      items.push({ ...data, id: doc.id });
+    });
+
+    return items;
+  } catch (error) {
+    console.error('Error fetching current month timeline:', error);
+    return [];
+  } finally {
+    this.loadingService.hide();
+  }
 }
 
+//Gallery
+// getGallery(): Observable<GalleryItem[]> {
+//   this.loadingService.show();
+
+//   return this.userProfile$.pipe(
+//     switchMap(profile => {
+//       if (!profile?.uid) {
+//         this.loadingService.hide();
+//         return of([]);
+//       }
+
+//       const galleryRef = collection(this.firestore, `users/${profile.uid}/gallery`);
+//       const galleryQuery = query(galleryRef, orderBy('date', 'desc'));
+
+//       return collectionData(galleryQuery, { idField: 'id' }) as Observable<GalleryItem[]>;
+//     }),
+//     tap(() => this.loadingService.hide()),
+//     catchError(error => {
+//       console.error('Error loading gallery:', error);
+//       this.loadingService.hide();
+//       return of([]);
+//     })
+//   );
+// }
+private lastGalleryDoc: DocumentData | null = null;
+
+async getGalleryPage(pageSize: number = 20): Promise<GalleryItem[]> {
+  const uid = this.getUid();
+  if (!uid) return [];
+
+  const galleryRef = collection(this.firestore, `users/${uid}/gallery`) as CollectionReference<GalleryItem>;
+
+  let q;
+  if (this.lastGalleryDoc) {
+    q = query(galleryRef, orderBy('date', 'desc'), startAfter(this.lastGalleryDoc), limit(pageSize));
+  } else {
+    q = query(galleryRef, orderBy('date', 'desc'), limit(pageSize));
+  }
+
+  try {
+    this.loadingService.show();
+    const querySnapshot = await getDocs(q);
+    const items: GalleryItem[] = [];
+    querySnapshot.forEach(doc => {
+      const data = doc.data() as GalleryItem;
+      items.push({ ...data, id: doc.id });
+    });
+    this.lastGalleryDoc = querySnapshot.docs[querySnapshot.docs.length - 1] || null;
+    return items;
+  } catch (error) {
+    console.error('Error fetching gallery page:', error);
+    return [];
+  } finally {
+    this.loadingService.hide();
+  }
+}
+
+resetGalleryPagination() {
+  this.lastGalleryDoc = null;
+}
+
+// Fetch only current month gallery items
+async getCurrentMonthGallery(): Promise<GalleryItem[]> {
+  const uid = this.getUid();
+  if (!uid) return [];
+
+  const now = new Date();
+  const firstDay = new Date(now.getFullYear(), now.getMonth(), 1);
+  const lastDay = new Date(now.getFullYear(), now.getMonth() + 1, 0, 23, 59, 59);
+
+  const galleryRef = collection(this.firestore, `users/${uid}/gallery`) as CollectionReference<GalleryItem>;
+
+  const q = query(
+    galleryRef,
+    orderBy('date', 'desc'),
+    where('date', '>=', firstDay.toISOString()),
+    where('date', '<=', lastDay.toISOString())
+  );
+
+  try {
+    this.loadingService.show();
+    const querySnapshot = await getDocs(q);
+    const items: GalleryItem[] = [];
+    querySnapshot.forEach(doc => {
+      const data = doc.data() as GalleryItem;
+      items.push({ ...data, id: doc.id });
+    });
+    return items;
+  } catch (error) {
+    console.error('Error fetching current month gallery:', error);
+    return [];
+  } finally {
+    this.loadingService.hide();
+  }
+}
 
 getPlaylists(): Observable<PlaylistItem[]> {
   this.loadingService.show();

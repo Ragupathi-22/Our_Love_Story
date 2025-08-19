@@ -7,14 +7,18 @@ import { VibeService } from './vibe.service';
 import { UserService } from '../../services/userService/user.service';
 import { ToastrService } from 'ngx-toastr';
 import { CommonModule } from '@angular/common';
+import { LucideAngularModule, Edit, Trash } from "lucide-angular";
+import { ConfirmDialogService } from '../../services/confirmationService/confirm_dialog.service';
 
 @Component({
   selector: 'app-our-vibes',
   templateUrl: './our-vibes.component.html',
   standalone: true,
-  imports: [ReactiveFormsModule, CommonModule]
+  imports: [ReactiveFormsModule, CommonModule, LucideAngularModule]
 })
 export class OurVibesComponent implements OnInit {
+  editIco = Edit;
+  deleteIco = Trash;
   form!: FormGroup;
   playlists: PlaylistItem[] = [];
   editingId: string | null = null;
@@ -25,7 +29,9 @@ export class OurVibesComponent implements OnInit {
     private vibeService: VibeService,
     private userService: UserService,
     private sanitizer: DomSanitizer,
-    private toastr: ToastrService
+    private toastr: ToastrService,
+    private confirmService: ConfirmDialogService
+
   ) { }
 
   ngOnInit(): void {
@@ -34,9 +40,9 @@ export class OurVibesComponent implements OnInit {
       playlistName: ['', [Validators.required]]
     });
 
- this.userService.getPlaylists().subscribe(playlists => {
-  this.playlists = playlists || [];
-});
+    this.userService.getPlaylists().subscribe(playlists => {
+      this.playlists = playlists || [];
+    });
 
 
   }
@@ -93,17 +99,27 @@ export class OurVibesComponent implements OnInit {
     });
   }
 
-  delete(id: string): void {
-    const uid = this.userService.getCurrentUserId();
-    if (!uid) return;
+ async delete(item: any): Promise<void> {
+  const confirmed = await this.confirmService.show(
+    'Delete Playlist',
+    `Are you sure you want to delete this playlist?\n${item.playlistName}`,
+    'Yes, Delete it',
+    'Keep it'
+  );
 
-    this.vibeService.deletePlaylist(uid, id).then((updated) => {
-      this.playlists = updated;
-      this.toastr.success('Playlist deleted');
-    }).catch(() => {
-      this.toastr.error('Error deleting playlist');
-    });
+  if (!confirmed) return;
+
+  const uid = this.userService.getCurrentUserId();
+  if (!uid) return;
+
+  try {
+    const updated = await this.vibeService.deletePlaylist(uid, item.id);
+    this.playlists = updated;
+    this.toastr.success('Playlist deleted');
+  } catch {
+    this.toastr.error('Error deleting playlist');
   }
+}
 
   resetForm(): void {
     this.editingId = null;

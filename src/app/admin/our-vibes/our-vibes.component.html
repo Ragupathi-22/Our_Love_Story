@@ -75,15 +75,15 @@
         <div class="flex space-x-2">
           <button [disabled]="isLoading" (click)="edit(playlist)"
             class="flex-1 py-1 text-sm text-pink-600 border border-pink-300 rounded hover:bg-pink-50 flex items-center justify-center gap-2">
-            <span *ngIf="!isLoading">Edit</span>
+            <span *ngIf="!isLoading"><lucide-icon class="w-4 h-4" [name]="editIco"/></span>
             <span *ngIf="isLoading" class="flex items-center gap-1">
               <div class="h-4 w-4 border-2 border-pink-400 border-t-transparent rounded-full animate-spin"></div>
               <span>Loading...</span>
             </span>
           </button>
-          <button [disabled]="isLoading" (click)="delete(playlist.id)"
+          <button [disabled]="isLoading" (click)="delete(playlist)"
             class="flex-1 py-1 text-sm text-pink-600 border border-pink-300 rounded hover:bg-pink-50 flex items-center justify-center gap-2">
-            <span *ngIf="!isLoading">Delete</span>
+            <span *ngIf="!isLoading"><lucide-icon class="w-4 h-4" [name]="deleteIco"/></span>
             <span *ngIf="isLoading" class="flex items-center gap-1">
               <div class="h-4 w-4 border-2 border-pink-400 border-t-transparent rounded-full animate-spin"></div>
               <span>Loading...</span>

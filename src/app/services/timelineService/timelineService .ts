@@ -51,61 +51,61 @@ export class TimelineService {
   }
 
   // ✅ Add or update a timeline item in the subcollection
-  async addOrUpdateTimeline(
-    uid: string,
-    formData: any,
-    photoUrl: string,
-    editingId: string | null,
-    deletePreviousPhoto: string
-  ) {
-    const timelineCollection = collection(
-      this.firestore,
-      `users/${uid}/timeline`
-    ) as CollectionReference<TimelineItem>;
+async addOrUpdateTimeline(
+  uid: string,
+  formData: any,
+  photoUrl: string,
+  editingId: string | null,
+  deletePreviousPhoto: string
+): Promise<TimelineItem> { // ← Make Promise<TimelineItem>
+  const timelineCollection = collection(
+    this.firestore,
+    `users/${uid}/timeline`
+  ) as CollectionReference<TimelineItem>;
 
-    if (editingId) {
-      const itemRef = doc(this.firestore, `users/${uid}/timeline/${editingId}`);
-      const updatedItem: TimelineItem = {
-        id: editingId,
-        ...formData,
-        photoUrl
-      };
+  if (editingId) {
+    const itemRef = doc(this.firestore, `users/${uid}/timeline/${editingId}`);
+    const updatedItem: TimelineItem = {
+      id: editingId,
+      ...formData,
+      photoUrl
+    };
 
-      if (photoUrl && deletePreviousPhoto && photoUrl !== deletePreviousPhoto) {
-        await this.deleteImageFromStorage(deletePreviousPhoto);
-      }
-
-      await setDoc(itemRef, updatedItem, { merge: true });
-    } else {
-      const id = uuidv4();
-      const itemRef = doc(this.firestore, `users/${uid}/timeline/${id}`);
-      const newItem: TimelineItem = {
-        id,
-        ...formData,
-        photoUrl
-      };
-
-      await setDoc(itemRef, newItem);
+    if (photoUrl && deletePreviousPhoto && photoUrl !== deletePreviousPhoto) {
+      await this.deleteImageFromStorage(deletePreviousPhoto);
     }
-  }
 
-
-
-  // ✅ Delete a single timeline item and its photo
-  async deleteTimelineItem(uid: string, id: string) {
+    await setDoc(itemRef, updatedItem, { merge: true });
+    return updatedItem; // ← Return the updated item
+  } else {
+    const id = uuidv4();
     const itemRef = doc(this.firestore, `users/${uid}/timeline/${id}`);
-    const itemSnap = await getDoc(itemRef);
-
-    if (!itemSnap.exists()) return;
-
-    const item = itemSnap.data() as TimelineItem;
-
-    if (item.photoUrl) {
-      await this.deleteImageFromStorage(item.photoUrl);
-    }
-
-    await deleteDoc(itemRef);
+    const newItem: TimelineItem = {
+      id,
+      ...formData,
+      photoUrl
+    };
+    await setDoc(itemRef, newItem);
+    return newItem; // ← Return the new item
   }
+}
+
+async deleteTimelineItem(uid: string, id: string): Promise<boolean> { // ← Make Promise<boolean>
+  const itemRef = doc(this.firestore, `users/${uid}/timeline/${id}`);
+  const itemSnap = await getDoc(itemRef);
+
+  if (!itemSnap.exists()) return false;
+
+  const item = itemSnap.data() as TimelineItem;
+
+  if (item.photoUrl) {
+    await this.deleteImageFromStorage(item.photoUrl);
+  }
+
+  await deleteDoc(itemRef);
+  return true; // Return flag for successful deletion
+}
+
 
   // ✅ Remove image from Firebase Storage
   async deleteImageFromStorage(photoUrl: string): Promise<void> {

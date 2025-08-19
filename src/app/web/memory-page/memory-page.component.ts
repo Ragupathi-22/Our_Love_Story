@@ -1,15 +1,13 @@
-// memory-page.component.ts
-import { Component, computed, effect, inject, OnInit, signal } from '@angular/core';
+import { Component, computed, inject, signal } from '@angular/core';
 import { v4 as uuidv4 } from 'uuid';
 import { ReminderItem, PeriodItem, BucketItem } from '../../models/user-profile.model';
 import { LucideAngularModule, X, HeartIcon, Bell, Calendar } from 'lucide-angular';
-import { AsyncPipe, CommonModule } from '@angular/common';
+import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { ToastrService } from 'ngx-toastr';
 import { MemoryService } from '../../services/memoryService/memory.service';
-import { UserService } from '../../services/userService/user.service';
-import { LoadingService } from '../../components/loading/loading.service';
-import { combineLatest } from 'rxjs';
+import { ConfirmDialogService } from '../../services/confirmationService/confirm_dialog.service';
+
 
 @Component({
   selector: 'app-memory-page',
@@ -18,183 +16,236 @@ import { combineLatest } from 'rxjs';
   styleUrls: ['./memory-page.component.css'],
   imports: [LucideAngularModule, CommonModule, FormsModule]
 })
-export class MemoryPageComponent implements OnInit {
+export class MemoryPageComponent {
   x = X;
   heart = HeartIcon;
   bell = Bell;
   calendar = Calendar;
 
-
   private memoryService = inject(MemoryService);
-  private userService = inject(UserService)
+  private toastr = inject(ToastrService);
+
   activeTab = signal<'reminders' | 'period' | 'bucket'>('reminders');
-  refreshTrigger = signal(0);
   activeReminderTab = signal<'thisMonth' | 'all'>('thisMonth');
   reminderSearchTerm = signal('');
 
+  // Data arrays
+  reminders = signal<ReminderItem[]>([]);
+  periods = signal<PeriodItem[]>([]);
+  bucketList = signal<BucketItem[]>([]);
 
-  readonly reminders = signal<ReminderItem[]>([]);
-  readonly periods = signal<PeriodItem[]>([]);
-  readonly bucketList = signal<BucketItem[]>([]);
+  // Pagination state flags
+  isLoadingReminders = signal(false);
+  allRemindersLoaded = signal(false);
 
+  isLoadingPeriods = signal(false);
+  allPeriodsLoaded = signal(false);
+
+  isLoadingBucketList = signal(false);
+  allBucketListLoaded = signal(false);
+
+  // Signal for new items
   newReminder = signal<{ text: string; date: string }>({ text: '', date: '' });
   newPeriod = signal<{ startDate: string; endDate: string }>({ startDate: '', endDate: '' });
   newBucketItem = signal<{ title: string; date: string }>({ title: '', date: '' });
 
-  isAddingReminder = signal(false);
-  isDeletingReminder = signal(false);
-  isAddingPeriod = signal(false);
-  isDeletingPeriod = signal(false);
   isLoading = signal(false);
 
+  constructor(private confirmDialog: ConfirmDialogService) {
+    this.resetAllPagination();
+  }
 
-constructor(private toastr: ToastrService,private loadingService:LoadingService) {
+  resetAllPagination() {
+    this.resetRemindersPagination();
+    this.resetPeriodsPagination();
+    this.resetBucketListPagination();
+  }
 
-}
-
-ngOnInit(): void {
-  const uid = this.userService.getUid(); // or from a UID signal
-  if (!uid) return;
-
-  this.loadingService.show();
-
-  const reminders$ = this.memoryService.getReminders();
-  const periods$ = this.memoryService.getPeriods();
-  const bucketList$ = this.memoryService.getBucketList();
-
-  combineLatest([reminders$, periods$, bucketList$]).subscribe(
-    ([reminders, periods, bucket]) => {
-      this.reminders.set(
-        reminders.sort((a, b) => new Date(b.date).getTime() - new Date(a.date).getTime())
-      );
-      this.periods.set(
-        periods.sort((a, b) => new Date(b.startDate).getTime() - new Date(a.startDate).getTime())
-      );
-      this.bucketList.set(
-        bucket.sort((a, b) => new Date(b.date).getTime() - new Date(a.date).getTime())
-      );
-
-      this.loadingService.hide(); // ✅ Hide loading only once everything is fetched
-    },
-    (error) => {
-      console.error('Error loading data:', error);
-      this.loadingService.hide(); // Still hide if an error occurs
+  // -------- Reminders --------
+  async loadNextRemindersPage() {
+    if (this.isLoadingReminders() || this.allRemindersLoaded()) return;
+    this.isLoadingReminders.set(true);
+    const newItems = await this.memoryService.getRemindersPage(20);
+    if (newItems.length === 0) {
+      this.allRemindersLoaded.set(true);
+    } else {
+      this.reminders.update(items => [...items, ...newItems]);
     }
-  );
-}
-
-  showToast(msg: string) {
-    this.toastr.success(msg);
+    this.isLoadingReminders.set(false);
   }
 
-  updateReminderText(text: string) {
-    const current = this.newReminder();
-    this.newReminder.set({ ...current, text });
+  resetRemindersPagination() {
+    this.memoryService.resetRemindersPagination();
+    this.reminders.set([]);
+    this.allRemindersLoaded.set(false);
+    this.loadNextRemindersPage();
   }
 
-  updateReminderDate(date: string) {
-    const current = this.newReminder();
-    this.newReminder.set({ ...current, date });
+  // -------- Periods --------
+  async loadNextPeriodsPage() {
+    if (this.isLoadingPeriods() || this.allPeriodsLoaded()) return;
+    this.isLoadingPeriods.set(true);
+    const newItems = await this.memoryService.getPeriodsPage(20);
+    if (newItems.length === 0) {
+      this.allPeriodsLoaded.set(true);
+    } else {
+      this.periods.update(items => [...items, ...newItems]);
+    }
+    this.isLoadingPeriods.set(false);
   }
 
-  updatePeriodStart(startDate: string) {
-    const current = this.newPeriod();
-    this.newPeriod.set({ ...current, startDate });
+  resetPeriodsPagination() {
+    this.memoryService.resetPeriodsPagination();
+    this.periods.set([]);
+    this.allPeriodsLoaded.set(false);
+    this.loadNextPeriodsPage();
   }
 
-  updatePeriodEnd(endDate: string) {
-    const current = this.newPeriod();
-    this.newPeriod.set({ ...current, endDate });
+  // -------- Bucket List --------
+  async loadNextBucketListPage() {
+    if (this.isLoadingBucketList() || this.allBucketListLoaded()) return;
+    this.isLoadingBucketList.set(true);
+    const newItems = await this.memoryService.getBucketListPage(20);
+    if (newItems.length === 0) {
+      this.allBucketListLoaded.set(true);
+    } else {
+      this.bucketList.update(items => [...items, ...newItems]);
+    }
+    this.isLoadingBucketList.set(false);
   }
 
-  updateBucketTitle(title: string) {
-    const curr = this.newBucketItem();
-    this.newBucketItem.set({ ...curr, title });
+  resetBucketListPagination() {
+    this.memoryService.resetBucketListPagination();
+    this.bucketList.set([]);
+    this.allBucketListLoaded.set(false);
+    this.loadNextBucketListPage();
   }
 
-  updateBucketDate(date: string) {
-    const curr = this.newBucketItem();
-    this.newBucketItem.set({ ...curr, date });
-  }
+  // -------- CRUD Operations --------
 
   async addReminder() {
     const { text, date } = this.newReminder();
     if (!text || !date) {
-      this.toastr.error('Please fill in both title and date...!')
-      return
-    };
+      this.toastr.error('Please fill in both title and date...!');
+      return;
+    }
 
     this.isLoading.set(true);
     try {
       const reminder: ReminderItem = { id: uuidv4(), title: text, date };
       await this.memoryService.addReminder(reminder);
       this.newReminder.set({ text: '', date: '' });
-      this.refreshTrigger.update(v => v + 1);
-      this.showToast('Event added!');
+      this.resetRemindersPagination();
+      this.toastr.success('Event added!');
     } finally {
       this.isLoading.set(false);
     }
   }
 
-  async deleteReminder(id: string) {
+  async deleteReminder(r: any) {
+
+    const confirmed = await this.confirmDialog.show(
+      'Delete Reminder',
+     `Are you sure you want to delete the Event?\n${r.title}`,
+      'Yes, Delete',
+      'No, Cancel'
+    );
+    if(!confirmed) return;
     this.isLoading.set(true);
     try {
-      await this.memoryService.deleteReminder(id);
-      this.refreshTrigger.update(v => v + 1);
-      this.showToast('Event deleted!');
+      await this.memoryService.deleteReminder(r.id);
+      this.resetRemindersPagination();
+      this.toastr.success('Event deleted!');
     } finally {
       this.isLoading.set(false);
     }
   }
-
-  filteredReminders = computed(() => {
-    const search = this.reminderSearchTerm().toLowerCase();
-    return this.reminders()
-      .filter(reminder => {
-        const matchesSearch = reminder.title.toLowerCase().includes(search);
-        const reminderMonth = new Date(reminder.date).getMonth();
-        const currentMonth = new Date().getMonth();
-
-        if (this.activeReminderTab() === 'thisMonth') {
-          return reminderMonth === currentMonth && matchesSearch;
-        } else {
-          return matchesSearch;
-        }
-      })
-      .sort((a, b) => new Date(b.date).getTime() - new Date(a.date).getTime());
-  });
-
-
 
   async addPeriod() {
     const { startDate, endDate } = this.newPeriod();
     if (!startDate || !endDate) {
-      this.toastr.error('Please make sure all fields are filled out...!')
-      return
-    };
+      this.toastr.error('Please make sure all fields are filled out...!');
+      return;
+    }
 
     this.isLoading.set(true);
     try {
       const period: PeriodItem = { id: uuidv4(), startDate, endDate };
       await this.memoryService.addPeriod(period);
       this.newPeriod.set({ startDate: '', endDate: '' });
-      this.refreshTrigger.update(v => v + 1);
-      this.showToast('Period added!');
+      this.resetPeriodsPagination();
+      this.toastr.success('Period added!');
     } finally {
       this.isLoading.set(false);
     }
   }
 
-  async deletePeriod(id: string) {
+  async deletePeriod(item: any) {
+
+    const confirmed = await this.confirmDialog.show(
+      'Delete Period',
+     `Are you sure you want to delete the Period?\n start: ${this.formatDate(item.startDate)}, end: ${this.formatDate(item.endDate)}`,
+      'Yes, Delete',
+      'No, Cancel'
+    );
+    if(!confirmed) return;
     this.isLoading.set(true);
     try {
-      await this.memoryService.deletePeriod(id);
-      this.refreshTrigger.update(v => v + 1);
-      this.showToast('Period deleted!');
+      await this.memoryService.deletePeriod(item.id);
+      this.resetPeriodsPagination();
+      this.toastr.success('Period deleted!');
     } finally {
       this.isLoading.set(false);
     }
   }
+
+  async addBucketItem() {
+    const { title, date } = this.newBucketItem();
+    if (!title || !date) {
+      this.toastr.error('Please fill in both title and date');
+      return;
+    }
+
+    this.isLoading.set(true);
+    try {
+      const item: BucketItem = { id: uuidv4(), title, date, completed: false };
+      await this.memoryService.addBucketItem(item);
+      this.newBucketItem.set({ title: '', date: '' });
+      this.resetBucketListPagination();
+      this.toastr.success('Bucket list item added!');
+    } finally {
+      this.isLoading.set(false);
+    }
+  }
+
+  async deleteBucketItem(item: any) {
+        const confirmed = await this.confirmDialog.show(
+      'Delete Bucket Item',
+     `Are you sure you want to delete?\n${item.title}`,
+      'Yes, Delete',
+      'No, Cancel'
+    );
+    if(!confirmed) return;
+    this.isLoading.set(true);
+    try {
+      await this.memoryService.deleteBucketItem(item.id);
+      this.resetBucketListPagination();
+      this.toastr.success('Item deleted');
+    } finally {
+      this.isLoading.set(false);
+    }
+  }
+
+  async toggleBucketCompleted(id: string, completed: boolean) {
+    this.isLoading.set(true);
+    try {
+      await this.memoryService.toggleBucketItemCompletion(id, completed);
+    } finally {
+      this.isLoading.set(false);
+    }
+  }
+
+  // Computed properties and helpers here...
 
   formatDate(dateStr: string): string {
     const date = new Date(dateStr);
@@ -232,48 +283,52 @@ ngOnInit(): void {
     };
   });
 
-  async addBucketItem() {
-    const { title, date } = this.newBucketItem();
-    if (!title || !date) {
-      this.toastr.error('Please fill in both title and date');
-      return;
-    }
+  // Optionally, filter logic for reminders, etc.
+  filteredReminders = computed(() => {
+    const search = this.reminderSearchTerm().toLowerCase();
+    return this.reminders()
+      .filter(reminder => {
+        const matchesSearch = reminder.title.toLowerCase().includes(search);
+        const reminderMonth = new Date(reminder.date).getMonth();
+        const currentMonth = new Date().getMonth();
 
-    this.isLoading.set(true);
-    try {
-      const item: BucketItem = {
-        id: uuidv4(),
-        title,
-        date,
-        completed: false
-      };
-      await this.memoryService.addBucketItem(item);
-      this.newBucketItem.set({ title: '', date: '' });
-      this.refreshTrigger.update(v => v + 1);
-      this.showToast('Bucket list item added!');
-    } finally {
-      this.isLoading.set(false);
-    }
+        if (this.activeReminderTab() === 'thisMonth') {
+          return reminderMonth === currentMonth && matchesSearch;
+        } else {
+          return matchesSearch;
+        }
+      })
+      .sort((a, b) => new Date(b.date).getTime() - new Date(a.date).getTime());
+  });
+
+
+  updateReminderText(text: string) {
+    const current = this.newReminder();
+    this.newReminder.set({ ...current, text });
   }
 
-  async deleteBucketItem(id: string) {
-    this.isLoading.set(true);
-    try {
-      await this.memoryService.deleteBucketItem(id);
-      this.refreshTrigger.update(v => v + 1);
-      this.showToast('Item deleted');
-    } finally {
-      this.isLoading.set(false);
-    }
+  updateReminderDate(date: string) {
+    const current = this.newReminder();
+    this.newReminder.set({ ...current, date });
   }
 
-  async toggleBucketCompleted(id: string, completed: boolean) {
-    this.isLoading.set(true);
-    try {
-      await this.memoryService.toggleBucketItemCompletion(id, completed);
-    } finally {
-      this.isLoading.set(false);
-    }
+  updatePeriodStart(startDate: string) {
+    const current = this.newPeriod();
+    this.newPeriod.set({ ...current, startDate });
   }
 
+  updatePeriodEnd(endDate: string) {
+    const current = this.newPeriod();
+    this.newPeriod.set({ ...current, endDate });
+  }
+
+  updateBucketTitle(title: string) {
+    const curr = this.newBucketItem();
+    this.newBucketItem.set({ ...curr, title });
+  }
+
+  updateBucketDate(date: string) {
+    const curr = this.newBucketItem();
+    this.newBucketItem.set({ ...curr, date });
+  }
 }

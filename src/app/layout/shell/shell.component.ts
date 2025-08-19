@@ -5,6 +5,7 @@ import { NavbarComponent } from '../../components/navbar/navbar.component';
 import { LoadingComponent } from "../../components/loading/loading.component";
 
 
+
 @Component({
   selector: 'app-shell',
   standalone: true,

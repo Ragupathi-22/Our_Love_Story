@@ -1,7 +1,5 @@
-import { Component } from '@angular/core';
+import { Component, OnInit } from '@angular/core';
 import { CommonModule } from '@angular/common';
-import { Observable } from 'rxjs';
-import { map } from 'rxjs/operators';
 import { TimelineItem } from '../../models/user-profile.model';
 import { AnimatedSectionComponent } from '../../components/AnimatedSection';
 import { UserService } from '../../services/userService/user.service';
@@ -14,29 +12,49 @@ declare const confetti: any;
   imports: [CommonModule, TimelineCardComponent, AnimatedSectionComponent],
   templateUrl: './journey.component.html'
 })
-export class JourneyComponent {
-  timeline$: Observable<TimelineItem[]>;
-  currentMonthItems$: Observable<TimelineItem[]>;
-     now :Date = new Date();
+export class JourneyComponent implements OnInit {
+  timelineItems: TimelineItem[] = [];
+  currentMonthItems: TimelineItem[] = [];
+  isLoading = false;
+  allLoaded = false;
+  now: Date = new Date();
+
   constructor(private userService: UserService) {
-    this.timeline$ = this.userService.getTimeline();
 
-    this.currentMonthItems$ = this.timeline$.pipe(
-      map(items =>
-        items.filter(item => {
+  }
+  ngOnInit() {
+    this.refreshTimeline();
+    this.loadCurrentMonthItems();
+    this.loadNextPage();
+  }
 
-          const date = new Date(item.date);
-          const now = new Date();
-          return (
-            date.getMonth() === now.getMonth()
-          );
-        })
-      )
-    );
+  async loadNextPage() {
+    if (this.isLoading || this.allLoaded) return;
+
+    this.isLoading = true;
+    const newItems = await this.userService.getTimelinePage(20);
+
+    if (newItems.length === 0) {
+      this.allLoaded = true; // No more data to load
+    } else {
+      this.timelineItems = [...this.timelineItems, ...newItems];
+    }
+
+    this.isLoading = false;
+  }
+
+  async loadCurrentMonthItems() {
+    this.currentMonthItems = await this.userService.getCurrentMonthTimeline();
+  }
+
+  refreshTimeline() {
+    this.userService.resetTimelinePagination();
+    this.timelineItems = [];
+    this.allLoaded = false;
+    this.loadNextPage();
   }
 
   showCelebrate() {
-    // Main heart confetti from lower point
     confetti({
       particleCount: 80,
       spread: 100,

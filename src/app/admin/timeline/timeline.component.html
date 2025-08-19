@@ -23,7 +23,8 @@
         </div>
         <div class="space-y-2">
           <label class="block text-sm font-medium text-gray-700" for="date">Date</label>
-          <input formControlName="date" type="date"  [max]="today"  id="date" class="w-full border border-gray-300 rounded px-3 py-2" />
+          <input formControlName="date" type="date" [max]="today" id="date"
+            class="w-full border border-gray-300 rounded px-3 py-2" />
         </div>
       </div>
       <div class="space-y-2">
@@ -57,8 +58,8 @@
       <div class="flex space-x-2">
         <button type="submit" [disabled]="isLoading" class="bg-gradient-to-r from-pink-500 to-rose-500 text-white px-4 py-2 rounded 
          hover:from-pink-600 hover:to-rose-600 disabled:opacity-50 disabled:cursor-not-allowed">
-         
-           <span *ngIf="!isLoading"> {{ editingId ? 'Update Memory' : 'Add Memory' }}</span>
+
+          <span *ngIf="!isLoading"> {{ editingId ? 'Update Memory' : 'Add Memory' }}</span>
           <span *ngIf="isLoading">Please wait...</span>
         </button>
 
@@ -77,9 +78,10 @@
         💖 Your Story
       </h2>
     </div>
-    <div *ngIf="timelineItems.length > 0; else noMemories" class="overflow-x-auto">
+    <div *ngIf="timelineItems.length > 0; else noMemories"
+      class="overflow-x-auto overflow-y-auto max-h-[400px] border border-gray-200 rounded">
       <table class="w-full text-left border border-gray-200 shadow-sm rounded-lg overflow-hidden">
-          <thead class="bg-pink-100 text-pink-800 border">
+        <thead class="bg-pink-100 text-pink-800 border sticky top-0 z-10">
           <tr>
             <th class="py-3 px-2 font-semibold text-gray-700">S.No</th>
             <th class="py-3 px-2 font-semibold text-gray-700">Title</th>
@@ -90,194 +92,48 @@
           </tr>
         </thead>
         <tbody>
-          <tr *ngFor="let item of timelineItems; index as i"
-        class="border-b">
+          <tr *ngFor="let item of timelineItems; index as i" class="border-b">
             <td class="py-4 px-2">{{ i + 1 }}</td>
             <td class="py-4 px-2">{{ item.title }}</td>
             <td class="py-4 px-2 max-w-xs truncate">{{ item.description }}</td>
             <td class="py-4 px-2">{{ item.date }}</td>
             <td class="py-4 px-2 max-w-xs truncate">
-              <!-- <a
-                *ngIf="item.photoUrl"
-                [href]="item.photoUrl"
-                target="_blank"
-                rel="noopener noreferrer"
-                class="text-blue-500 hover:underline"
-              >
-                View Photo
-              </a> -->
-              <img src="{{ item.photoUrl }}" alt="Memory Photo"
-                class="w-12 h-12 rounded-full object-cover border border-gray-300 shadow-sm" *ngIf="item.photoUrl" />
+              <img *ngIf="item.photoUrl" [src]="item.photoUrl" alt="Memory Photo"
+                class="w-12 h-12 rounded-full object-cover border border-gray-300 shadow-sm" />
               <span *ngIf="!item.photoUrl">No photo</span>
             </td>
             <td class="py-4 px-2">
               <div class="flex space-x-2">
                 <button class="border border-blue-300 text-blue-600 px-2 py-1 rounded hover:bg-blue-50"
                   (click)="editItem(item)" [disabled]="isLoading">
-
-                 ✏️ <span class="hidden sm:inline">Edit</span>
+                  <lucide-icon [name]="editIco" class="w-4 h-4" />
                 </button>
-
                 <button class="border border-red-300 text-red-600 px-2 py-1 rounded hover:bg-red-50"
-                  (click)="deleteItem(item.id)" [disabled]="isLoading">
-                  🗑️ <span class="hidden sm:inline">Delete</span>
+                  (click)="deleteItem(item)" [disabled]="isLoading">
+                  <lucide-icon [name]="deleteIco" class="w-4 h-4" />
                 </button>
-
               </div>
             </td>
           </tr>
         </tbody>
       </table>
+
+      <!-- Load More Button -->
+      <div class="text-center py-4">
+        <button (click)="loadNextPage()"
+          class="bg-pink-500 text-white font-semibold px-6 py-3 rounded-lg shadow hover:bg-pink-600 transition"
+          [disabled]="isLoading || allLoaded">
+          {{ isLoading ? 'Loading...' : (allLoaded ? 'No more items' : 'Load More') }}
+        </button>
+      </div>
     </div>
+
     <ng-template #noMemories>
       <div class="text-center py-12">
         <p class="text-gray-500 text-lg">No memories yet</p>
         <p class="text-gray-400">Start building your beautiful timeline together! 💕</p>
       </div>
     </ng-template>
+
   </div>
 </div>
-
-
-
-
-
-<!-- <div class="p-8">
-  <div class="mb-8">
-    <h1 class="text-4xl font-bold bg-gradient-to-r from-pink-600 to-rose-600 bg-clip-text text-transparent">
-      Love Timeline 🗓️
-    </h1>
-    <p class="text-gray-600 mt-2">Capture and cherish your beautiful moments together</p>
-  </div>
-
-  <div class="mb-8 shadow-lg bg-white rounded-lg">
-    <div class="p-4 border-b">
-      <h2 class="text-lg font-semibold flex items-center gap-2">
-        ✨
-        {{ editingId ? 'Edit Memory' : 'Add New Memory' }}
-      </h2>
-    </div>
-    <form [formGroup]="form" (ngSubmit)="onSubmit()" class="p-4 space-y-4">
-      <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
-        <div class="space-y-2">
-          <label class="block text-sm font-medium text-gray-700" for="title">Title</label>
-          <input
-            formControlName="title"
-            type="text"
-            id="title"
-            class="w-full border border-gray-300 rounded px-3 py-2"
-            placeholder="Our first date..."
-          />
-        </div>
-        <div class="space-y-2">
-          <label class="block text-sm font-medium text-gray-700" for="date">Date</label>
-          <input
-            formControlName="date"
-            type="date"
-            id="date"
-            class="w-full border border-gray-300 rounded px-3 py-2"
-          />
-        </div>
-      </div>
-      <div class="space-y-2">
-        <label class="block text-sm font-medium text-gray-700" for="description">Description</label>
-        <textarea
-          formControlName="description"
-          id="description"
-          rows="3"
-          class="w-full border border-gray-300 rounded px-3 py-2"
-          placeholder="Tell the story of this beautiful moment..."
-        ></textarea>
-      </div>
-      <div class="space-y-2">
-        <label class="block text-sm font-medium text-gray-700" for="photoUrl">Picture URL</label>
-        <input
-          formControlName="photoUrl"
-          type="text"
-          id="photoUrl"
-          class="w-full border border-gray-300 rounded px-3 py-2"
-          placeholder="https://example.com/photo.jpg"
-        />
-      </div>
-      <div class="flex space-x-2">
-        <button
-          type="submit"
-          class="bg-gradient-to-r from-pink-500 to-rose-500 text-white px-4 py-2 rounded hover:from-pink-600 hover:to-rose-600"
-        >
-          {{ editingId ? 'Update Memory' : 'Add Memory' }}
-        </button>
-        <button
-          *ngIf="editingId"
-          type="button"
-          (click)="cancelEdit()"
-          class="border px-4 py-2 rounded text-gray-700"
-        >
-          Cancel
-        </button>
-      </div>
-    </form>
-  </div>
-
-  <div class="shadow-lg bg-white rounded-lg">
-    <div class="p-4 border-b">
-      <h2 class="text-lg font-semibold flex items-center gap-2">
-        💖
-        Your Love Story
-      </h2>
-    </div>
-    <div *ngIf="timelineItems.length > 0; else noMemories" class="overflow-x-auto">
-      <table class="w-full text-left">
-        <thead>
-          <tr class="border-b">
-            <th class="py-3 px-2 font-semibold text-gray-700">Title</th>
-            <th class="py-3 px-2 font-semibold text-gray-700">Description</th>
-            <th class="py-3 px-2 font-semibold text-gray-700">Date</th>
-            <th class="py-3 px-2 font-semibold text-gray-700">Picture</th>
-            <th class="py-3 px-2 font-semibold text-gray-700">Actions</th>
-          </tr>
-        </thead>
-        <tbody>
-          <tr *ngFor="let item of timelineItems" class="border-b hover:bg-pink-50">
-            <td class="py-4 px-2">{{ item.title }}</td>
-            <td class="py-4 px-2 max-w-xs truncate">{{ item.description }}</td>
-            <td class="py-4 px-2">{{ item.date }}</td>
-            <td class="py-4 px-2 max-w-xs truncate">
-              <a
-                *ngIf="item.photoUrl"
-                [href]="item.photoUrl"
-                target="_blank"
-                rel="noopener noreferrer"
-                class="text-blue-500 hover:underline"
-              >
-                View Photo
-              </a>
-              <span *ngIf="!item.photoUrl">No photo</span>
-            </td>
-            <td class="py-4 px-2">
-              <div class="flex space-x-2">
-                <button
-                  class="border border-blue-300 text-blue-600 px-2 py-1 rounded hover:bg-blue-50"
-                  (click)="editItem(item)"
-                >
-                  Edit
-                </button>
-                <button
-                  class="border border-red-300 text-red-600 px-2 py-1 rounded hover:bg-red-50"
-                  (click)="deleteItem(item.id)"
-                >
-                  Delete
-                </button>
-              </div>
-            </td>
-          </tr>
-        </tbody>
-      </table>
-    </div>
-    <ng-template #noMemories>
-      <div class="text-center py-12">
-        <p class="text-gray-500 text-lg">No memories yet</p>
-        <p class="text-gray-400">Start building your beautiful timeline together! 💕</p>
-      </div>
-    </ng-template>
-  </div>
-</div> -->
