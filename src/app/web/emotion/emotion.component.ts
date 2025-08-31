@@ -4,7 +4,7 @@ import { EmotionService } from '../../services/emotions/emotion.service';
 import { compareDesc, format, isSameMonth, parseISO } from 'date-fns';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
-import { LucideAngularModule, ArrowLeftSquare, ArrowRightSquare } from 'lucide-angular';
+import { LucideAngularModule, ArrowLeftSquare, ArrowRightSquare ,Eye,EyeOff,Lock} from 'lucide-angular';
 import { ToastrService } from 'ngx-toastr';
 
 
@@ -18,7 +18,11 @@ import { ToastrService } from 'ngx-toastr';
 export class EmotionComponent implements OnInit {
   ArrowLeft = ArrowLeftSquare;
   ArrowRight = ArrowRightSquare;
+  Eye=Eye;
+  EyeOff=EyeOff;
+  Lock=Lock;
   loading = signal(false);
+  showPassword=false;
   // === Emoji List ===
   emojis = [
     { emoji: '❤️', label: 'Love' },
