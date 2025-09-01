@@ -62,13 +62,14 @@ async addOrUpdateTimeline(
     this.firestore,
     `users/${uid}/timeline`
   ) as CollectionReference<TimelineItem>;
-
+  const month = new Date(formData.date).getMonth() + 1;
   if (editingId) {
     const itemRef = doc(this.firestore, `users/${uid}/timeline/${editingId}`);
     const updatedItem: TimelineItem = {
       id: editingId,
       ...formData,
-      photoUrl
+      photoUrl,
+      month
     };
 
     if (photoUrl && deletePreviousPhoto && photoUrl !== deletePreviousPhoto) {
@@ -83,7 +84,8 @@ async addOrUpdateTimeline(
     const newItem: TimelineItem = {
       id,
       ...formData,
-      photoUrl
+      photoUrl,
+      month
     };
     await setDoc(itemRef, newItem);
     return newItem; // ← Return the new item

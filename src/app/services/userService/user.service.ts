@@ -157,23 +157,17 @@ export class UserService {
     this.lastTimelineDoc = null;
   }
 
-  async getCurrentMonthTimeline(): Promise<TimelineItem[]> {
+async getCurrentMonthTimeline(): Promise<TimelineItem[]> {
   const uid = this.getUid();
   if (!uid) return [];
 
   const now = new Date();
-  const firstDay = new Date(now.getFullYear(), now.getMonth(), 1);
-  const lastDay = new Date(now.getFullYear(), now.getMonth() + 1, 0, 23, 59, 59);
+  const currentMonth = now.getMonth() + 1;
 
   const timelineRef = collection(this.firestore, `users/${uid}/timeline`);
 
-  // Query by date range for current month
-  const q = query(
-    timelineRef,
-    orderBy('date', 'desc'),
-    where('date', '>=', firstDay.toISOString()),
-    where('date', '<=', lastDay.toISOString())
-  );
+  // Query only by month filter to avoid index issues
+  const q = query(timelineRef, where('month', '==', currentMonth));
 
   try {
     this.loadingService.show();
@@ -184,14 +178,18 @@ export class UserService {
       items.push({ ...data, id: doc.id });
     });
 
+    // Client-side sort by date descending
+    items.sort((a, b) => new Date(b.date).getTime() - new Date(a.date).getTime());
+
     return items;
   } catch (error) {
-    console.error('Error fetching current month timeline:', error);
+    console.error('Error fetching timeline for current month:', error);
     return [];
   } finally {
     this.loadingService.hide();
   }
 }
+
 
 //Gallery
 // getGallery(): Observable<GalleryItem[]> {
@@ -260,17 +258,12 @@ async getCurrentMonthGallery(): Promise<GalleryItem[]> {
   if (!uid) return [];
 
   const now = new Date();
-  const firstDay = new Date(now.getFullYear(), now.getMonth(), 1);
-  const lastDay = new Date(now.getFullYear(), now.getMonth() + 1, 0, 23, 59, 59);
+  const currentMonth = now.getMonth() + 1;
 
   const galleryRef = collection(this.firestore, `users/${uid}/gallery`) as CollectionReference<GalleryItem>;
 
-  const q = query(
-    galleryRef,
-    orderBy('date', 'desc'),
-    where('date', '>=', firstDay.toISOString()),
-    where('date', '<=', lastDay.toISOString())
-  );
+  // Query by month field only, no orderBy for index safety
+  const q = query(galleryRef, where('month', '==', currentMonth));
 
   try {
     this.loadingService.show();
@@ -280,6 +273,10 @@ async getCurrentMonthGallery(): Promise<GalleryItem[]> {
       const data = doc.data() as GalleryItem;
       items.push({ ...data, id: doc.id });
     });
+
+    // Client-side sort by date descending
+    items.sort((a, b) => new Date(b.date).getTime() - new Date(a.date).getTime());
+
     return items;
   } catch (error) {
     console.error('Error fetching current month gallery:', error);
@@ -288,6 +285,7 @@ async getCurrentMonthGallery(): Promise<GalleryItem[]> {
     this.loadingService.hide();
   }
 }
+
 
 getPlaylists(): Observable<PlaylistItem[]> {
   this.loadingService.show();

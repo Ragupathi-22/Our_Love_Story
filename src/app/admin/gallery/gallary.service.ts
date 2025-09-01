@@ -52,44 +52,48 @@ export class GalleryService {
     return await getDownloadURL(storageRef);
   }
 
-  async addOrUpdateGallery(
-    uid: string,
-    formData: { title: string; date: string },
-    photoUrl: string,
-    editingId: string | null,
-    previousPhotoUrl: string
-  ): Promise<GalleryItem | null> {
-    const galleryRef = collection(this.firestore, `users/${uid}/gallery`);
+async addOrUpdateGallery(
+  uid: string,
+  formData: { title: string; date: string },
+  photoUrl: string,
+  editingId: string | null,
+  previousPhotoUrl: string
+): Promise<GalleryItem | null> {
+  const galleryRef = collection(this.firestore, `users/${uid}/gallery`);
+  const month = new Date(formData.date).getMonth() + 1; // Extract month (1-12)
 
-    if (editingId) {
-      const itemRef = doc(this.firestore, `users/${uid}/gallery/${editingId}`);
-      const snapshot = await getDoc(itemRef);
-      const existing = snapshot.data() as GalleryItem | undefined;
+  if (editingId) {
+    const itemRef = doc(this.firestore, `users/${uid}/gallery/${editingId}`);
+    const snapshot = await getDoc(itemRef);
+    const existing = snapshot.data() as GalleryItem | undefined;
 
-      if (existing && photoUrl !== previousPhotoUrl && previousPhotoUrl) {
-        await this.deleteImageFromStorage(previousPhotoUrl);
-      }
-
-      await updateDoc(itemRef, {
-        title: formData.title,
-        date: formData.date,
-        photoUrl,
-      });
-
-      return { id: editingId, ...formData, photoUrl } as GalleryItem;
-    } else {
-      const newItem: GalleryItem = {
-        id: uuidv4(),
-        title: formData.title,
-        date: formData.date,
-        photoUrl,
-      };
-      const docRef = await addDoc(galleryRef, newItem);
-      await updateDoc(docRef, { id: docRef.id }); // ensure `id` is set inside the document
-
-      return { ...newItem, id: docRef.id };
+    if (existing && photoUrl !== previousPhotoUrl && previousPhotoUrl) {
+      await this.deleteImageFromStorage(previousPhotoUrl);
     }
+
+    await updateDoc(itemRef, {
+      title: formData.title,
+      date: formData.date,
+      photoUrl,
+      month
+    });
+
+    return { id: editingId, ...formData, photoUrl, month } as GalleryItem;
+  } else {
+    const newItem: GalleryItem = {
+      id: uuidv4(),
+      title: formData.title,
+      date: formData.date,
+      photoUrl,
+      month
+    };
+    const docRef = await addDoc(galleryRef, newItem);
+    await updateDoc(docRef, { id: docRef.id });
+
+    return { ...newItem, id: docRef.id };
   }
+}
+
 
   async deleteGalleryItem(uid: string, id: string): Promise<boolean> {
     const itemRef = doc(this.firestore, `users/${uid}/gallery/${id}`);

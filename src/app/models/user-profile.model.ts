@@ -10,6 +10,7 @@ export interface TimelineItem {
   title: string;
   photoUrl: string;
   description: string;
+  month:number;
 }
 
 export interface GalleryItem {
@@ -17,6 +18,7 @@ export interface GalleryItem {
   title: string;
   date: string;
   photoUrl: string;
+  month:number;
 }
 export interface ReminderItem {
   id: string;
