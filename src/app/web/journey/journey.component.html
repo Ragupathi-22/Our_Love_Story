@@ -25,7 +25,12 @@
             <p class="text-xs text-gray-500">
               {{ item.date | date: 'MMM d, y' }}
             </p>
+            <!-- Add inside mobile memory item -->
+            <button (click)="openMemory(item)" class="mt-2 text-pink-500 hover:text-pink-700 text-sm font-medium">
+              💖 View More
+            </button>
           </div>
+
 
         </ng-container>
 
@@ -55,11 +60,16 @@
                     <h3 class="font-medium text-gray-800">
                       {{ item.title }}
                     </h3>
-                    <span class="h-4 w-4 text-pink-500 mt-1">💖</span>
+                    <!-- <span class="h-4 w-4 text-pink-500 mt-1">💖</span> -->
                   </div>
                   <p class="text-sm text-gray-500 mb-2">
                     {{ item.date | date: 'MMM d, y' }}
                   </p>
+                  <!-- Add inside desktop memory item -->
+                  <button (click)="openMemory(item)" class="text-pink-500 hover:text-pink-700 text-sm font-medium mt-1">
+                    💖 View More
+                  </button>
+
                   <!-- <p class="text-sm text-gray-600 line-clamp-2">
                   {{ item.description }}
                   </p> -->
@@ -128,3 +138,55 @@
 
   </div>
 </div>
+
+
+<div *ngIf="selectedMemory" class="fixed inset-0 z-50 flex items-center justify-center p-4">
+  <!-- Frosted backdrop (click to close) -->
+  <div class="absolute inset-0 bg-pink-200/50 backdrop-blur-sm cursor-pointer" (click)="closeMemory()"></div>
+
+  <!-- Modal container -->
+  <div
+    class="relative bg-gradient-to-br from-pink-100 to-pink-50 rounded-2xl shadow-lg w-full max-w-sm border border-pink-200 overflow-hidden z-10"
+    style="max-height: 80vh; overflow-y: auto;">
+
+    <!-- Floating hearts in the background -->
+    <app-floating-hearts class="absolute inset-0 z-0 pointer-events-none"></app-floating-hearts>
+
+    <!-- Content wrapper with padding -->
+    <div class="p-5">
+
+      <!-- Title -->
+      <h2 class="text-2xl md:text-3xl font-bold text-pink-600 text-center mb-3 relative z-10">
+        {{ selectedMemory.title }} 💞
+      </h2>
+
+      <!-- Image with blurred background -->
+      <div class="relative w-full flex items-center justify-center rounded-xl overflow-hidden z-10 h-36 md:h-40 mb-2">
+        <!-- Blurred background -->
+        <img [src]="selectedMemory.photoUrl"
+             class="absolute inset-0 w-full h-full object-cover blur-3xl scale-110 opacity-60" />
+        <!-- Foreground sharp image -->
+        <img [src]="selectedMemory.photoUrl"
+             class="relative max-h-32 md:max-h-36 object-contain rounded-lg" />
+      </div>
+
+      <!-- Date -->
+      <p class="text-rose-500 text-sm text-center italic z-10 mb-2">
+        {{ selectedMemory.date | date: 'fullDate' }} 
+      </p>
+
+      <!-- Description -->
+      <p class="text-gray-700 text-center leading-relaxed z-10 text-sm md:text-base mb-4">
+        “{{ selectedMemory.description }}”
+      </p>
+
+      <!-- Close button -->
+      <button (click)="closeMemory()"
+              class="w-full bg-gradient-to-r from-pink-400 to-rose-500 text-white py-2 rounded-full shadow-md hover:from-pink-500 hover:to-rose-600 transition transform hover:scale-105 z-10">
+        Close 💌
+      </button>
+
+    </div>
+  </div>
+</div>
+

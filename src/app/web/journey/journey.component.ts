@@ -5,19 +5,34 @@ import { AnimatedSectionComponent } from '../../components/AnimatedSection';
 import { UserService } from '../../services/userService/user.service';
 import { TimelineCardComponent } from '../../components/timeline-card/timeline-card.component';
 declare const confetti: any;
+import { FloatingHeartsComponent } from '../../components/FloatingHearts';
+import { Eye, Heart, LucideAngularModule } from 'lucide-angular';
 
 @Component({
   selector: 'app-journey',
   standalone: true,
-  imports: [CommonModule, TimelineCardComponent, AnimatedSectionComponent],
+  imports: [CommonModule, TimelineCardComponent, AnimatedSectionComponent,FloatingHeartsComponent,LucideAngularModule],
   templateUrl: './journey.component.html'
 })
 export class JourneyComponent implements OnInit {
+  eye =Eye
+  heart =Heart
   timelineItems: TimelineItem[] = [];
   currentMonthItems: TimelineItem[] = [];
   isLoading = false;
   allLoaded = false;
   now: Date = new Date();
+
+  selectedMemory: any = null;
+
+openMemory(item: any) {
+  this.selectedMemory = item;
+}
+
+closeMemory() {
+  this.selectedMemory = null;
+}
+
 
   constructor(private userService: UserService) {
 
@@ -84,4 +99,5 @@ export class JourneyComponent implements OnInit {
       });
     }, 1000);
   }
+  
 }
